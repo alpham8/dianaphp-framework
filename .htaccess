@@ -1,0 +1,16 @@
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    # Folders / files to exclude from rewrite divided by Pipe goes here:
+    RewriteRule (^|/)web(/|$) - [L,NC]
+
+    # turn empty requests into requests for "index.php",
+    # keeping the query string intact
+    RewriteRule ^$ index.php [QSA]
+
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !favicon.ico$
+    RewriteRule ^(.+)$ index.php [QSA,L]
+
+    RewriteRule ^(.+)$ index.php [QSA,L]
+</IfModule>
