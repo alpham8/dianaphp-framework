@@ -1,0 +1,35 @@
+{
+	"name": "Diana PHP",
+	"version": "0.1.2",
+	"description": "A simple PHP framework with ease to use.",
+	"keywords":
+				[
+					"php",
+					"framework",
+					"psr-4"
+				],
+	"license": "Apache-2.0",
+	"authors":
+				[
+					{
+						"name": "Thomas Georg Wunner",
+						"email": "info@wunner-software.de"
+					}
+				],
+	"support":
+				{
+					"email": "info@wunner-software.de"
+				},
+	"type": "project",
+	"autoload":
+				{
+					"psr-4": {
+								"Diana\\": "Lib/",
+								"App\\": "App/"
+							}
+				},
+	"require":
+			{
+				"php": ">=5.4"
+			}
+}
