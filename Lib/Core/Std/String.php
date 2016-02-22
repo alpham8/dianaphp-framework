@@ -17,6 +17,7 @@ namespace Diana\Core\Std
 {
 	use Diana\Core\Util\ExceptionView;
 
+	// TODO: mb_http_output einbauen fuer JSON response
 	class String
 	{
 		private $_strCurrent;
@@ -30,7 +31,12 @@ namespace Diana\Core\Std
 
 		public function __construct($strCurrent = '')
 		{
-			if (!is_string($strCurrent))
+			if ($strCurrent instanceof String)
+			{
+				$strCurrent = $strCurrent->__toString();
+			}
+			
+			elseif (!is_string($strCurrent))
 			{
 				self::_typeError('Class String must be initiliazed with a String. Trace: '
                                     . ExceptionView::prettyPrintTrace());
@@ -58,17 +64,12 @@ namespace Diana\Core\Std
 				$strPartToCheck = $strPartToCheck->__toString();
 			}
 
-			elseif (is_string($strPartToCheck))
-			{
-
-			}
-
-			else
+			elseif (!is_string($strPartToCheck))
 			{
 				self::_typeError('Part String must be a String itself.');
 			}
 
-			$strEncoding = $this->_bMb ? mb_detect_encoding($strPartToCheck) : 'ascii';
+			$strEncoding = $this->_bMb ? mb_strtolower(mb_detect_encoding($strPartToCheck)) : 'ascii';
 
 			if ($strEncoding === 'ascii' && $this->length < strlen($strPartToCheck))
 			{
@@ -90,7 +91,7 @@ namespace Diana\Core\Std
 
 			elseif ($this->_bMb && $strEncoding === 'ascii')
 			{
-				$bRet = mb_substr($this->_strCurrent, 0, strlen($strPartToCheck)) == $strPartToCheck;
+				$bRet = mb_substr($this->_strCurrent, 0, strlen($strPartToCheck)) === $strPartToCheck;
 			}
 
 			elseif (!$this->_bMb && $strEncoding === 'ascii')
@@ -114,17 +115,12 @@ namespace Diana\Core\Std
 				$strPartToCheck = $strPartToCheck->__toString();
 			}
 
-			elseif (is_string($strPartToCheck))
-			{
-
-			}
-
-			else
+			elseif (!is_string($strPartToCheck))
 			{
 				self::_typeError('Part String must be a String itself.');
 			}
 
-			$strEncoding = $this->_bMb ? mb_detect_encoding($strPartToCheck) : 'ascii';
+			$strEncoding = $this->_bMb ? mb_strtolower(mb_detect_encoding($strPartToCheck)) : 'ascii';
 
 			if ($strEncoding === 'ascii' && $this->length < strlen($strPartToCheck))
 			{
@@ -165,17 +161,47 @@ namespace Diana\Core\Std
 		{
 			if ($this->_bMb)
 			{
-				$strRegexPattern = $this->_sanitizeMbRegex($strRegexPattern);
+				//$strRegexPattern = $this->_sanitizeMbRegex($strRegexPattern);
+				$strRegexPattern = $strRegexPattern instanceof String ? $strRegexPattern : new String($strRegexPattern);
 
-				return $arMatches === null ?
-					mb_ereg($strRegexPattern, $this->_strCurrent)
-						: mb_ereg($strRegexPattern, $this->_strCurrent, $arMatches);
+				if ($strRegexPattern->startsWith('/'))
+				{
+					$iLastSlash = $strRegexPattern->lastIndexOf('/') + 1;
+					$modifiers = $strRegexPattern->substring($iLastSlash);
+					$modifiers = $modifiers->contains('u') ? $modifiers : new String($modifiers . 'u');
+					$strRegexPattern = new String($strRegexPattern->substring(0, $iLastSlash) . $modifiers);
+				}
+
+				else
+				{
+					$strRegexPattern = new String('/' . $strRegexPattern . '/u');
+				}
+
+				if ($arMatches === null)
+				{
+					return preg_match($strRegexPattern->__toString(), $this->_strCurrent) === 1;
+				}
+
+				else
+				{
+					// safe unicode regex check
+					// could be also done with the u modifier in preg_match_all
+					// @see http://stackoverflow.com/questions/1766485/are-the-php-preg-functions-multibyte-safe/1766546#1766546
+					// @see http://stackoverflow.com/questions/7675627/multi-byte-function-to-replace-preg-match-all
+					//mb_ereg_search_init($this->_strCurrent, $strRegexPattern);
+					//$arMatches = mb_ereg_search_regs($strRegexPattern);
+					//
+					//return is_array($arMatches) && count($arMatches) > 0;
+					// TODO: Fix here maybe with mb_split to get all the matches back and then divide into groups
+
+					return preg_match_all($strRegexPattern, $this->_strCurrent, $arMatches);
+				}
 			}
 
 			else
 			{
 				return $arMatches === null ?
-					preg_match($strRegexPattern, $this->_strCurrent)
+					preg_match($strRegexPattern, $this->_strCurrent) === 1
 						: preg_match_all($strRegexPattern, $this->_strCurrent, $arMatches);
 			}
 		}
@@ -217,17 +243,25 @@ namespace Diana\Core\Std
 
 		public function lcFirst()
 		{
-			return new String(lcfirst($this->_strCurrent));
+			if ($this->_bMb)
+			{
+				return new String(mb_strtoupper(mb_substr($this->_strCurrent, 0, 1)) . mb_substr($this->_strCurrent, 1));
+			}
+
+			else
+			{
+				return new String(lcfirst($this->_strCurrent));
+			}
 		}
 
 		public function toLower()
 		{
-			return new String(strtolower($this->_strCurrent));
+			return new String($this->_bMb ? mb_strtolower($this->_strCurrent) : strtolower($this->_strCurrent));
 		}
 
 		public function toUpper()
 		{
-			return new String(strtoupper($this->_strCurrent));
+			return new String($this->_bMb ? mb_strtoupper($this->_strCurrent) : strtoupper($this->_strCurrent));
 		}
 
 		public function isEmpty()
@@ -241,10 +275,23 @@ namespace Diana\Core\Std
 			return $this->_strCurrent;
 		}
 
-		// TODO: Method below
 		public function getEnumerator()
 		{
-			return str_split($this->_strCurrent);
+			if ($this->_bMb)
+			{
+				$arChars = array();
+				for ($i = 0; $i < $this->length; $i++)
+				{
+					$arChars[] = mb_substr($this->_strCurrent, $i, 1);
+				}
+
+				return $arChars;
+			}
+
+			else
+			{
+				return str_split($this->_strCurrent);
+			}
 		}
 
 		public function indexOf($sSearchTo)
@@ -308,10 +355,9 @@ namespace Diana\Core\Std
 			$str instanceof String ? $str->__toString() : $str;
 
 			$arRet = $this->splitBy($str, $iLimit);
-			// TODO: maybe foreach for speed improvements?
-			for ($i = 0; $i < count($arRet); $i++)
+			foreach ($arRet as $iIndex => $strCurrent)
 			{
-				$arRet[$i] = new String($arRet[$i]);
+				$arRet[$iIndex] = new String($strCurrent);
 			}
 
 			return $arRet;
@@ -428,15 +474,40 @@ namespace Diana\Core\Std
 
 		protected function _sanitizeMbRegex($strRegexPattern)
 		{
-			$strRegexPattern instanceof String ? $strRegexPattern->__toString() : $strRegexPattern;
+			$strRegexPattern = $strRegexPattern instanceof String ? $strRegexPattern : new String($strRegexPattern);
 			$sEncoding = mb_detect_encoding($this->_strCurrent);
 			mb_regex_encoding($sEncoding);
-			$strRegexPattern = mb_convert_encoding($strRegexPattern, $sEncoding);
+			$strRegexPattern = new String(mb_convert_encoding($strRegexPattern->__toString(), $sEncoding));
 
-			return mb_strpos($strRegexPattern, '/') === 0
-								&& mb_strrpos($strRegexPattern, '/') === (mb_strlen($strRegexPattern) - 1)
-									? mb_substr($strRegexPattern, 1, mb_strlen($strRegexPattern) - 2)
-										: $strRegexPattern;
+			if ($strRegexPattern->startsWith('/') && $strRegexPattern->endsWith('/') && $strRegexPattern->length > 1)
+			{
+				return  mb_substr($strRegexPattern->__toString(), 1, $strRegexPattern->length - 2);
+			}
+
+			else
+			{
+				$strRegexPattern = $strRegexPattern->replace('/', '\/');
+				$strRegexPattern = $strRegexPattern->replace('?', '\?');
+				$strRegexPattern = $strRegexPattern->replace('(', '\(');
+				$strRegexPattern = $strRegexPattern->replace(')', '\)');
+				$strRegexPattern = $strRegexPattern->replace('*', '\*');
+				$strRegexPattern = $strRegexPattern->replace('[', '\[');
+				$strRegexPattern = $strRegexPattern->replace('{', '\{');
+				$strRegexPattern = $strRegexPattern->replace('}', '\}');
+				$strRegexPattern = $strRegexPattern->replace('.', '\.');
+				$strRegexPattern = $strRegexPattern->replace('|', '\|');
+
+				return $strRegexPattern->__toString();
+			}
+
+			return $strRegexPattern->startsWith('/')
+						&& $strRegexPattern->endsWith('/')
+						&& $strRegexPattern->length > 1
+							? mb_substr($strRegexPattern->__toString(), 1, $strRegexPattern->length - 2)
+								: $strRegexPattern->replace('/', '\/')->replace('?', '\?')->__toString();
+			//return $strRegexPattern->length > 1
+			//	? $strRegexPattern->__toString()
+			//		: $strRegexPattern->replace('/', '\/')->replace('?', '\?')->__toString();
 		}
 	}
 }

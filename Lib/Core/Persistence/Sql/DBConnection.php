@@ -30,7 +30,18 @@ namespace Diana\Core\Persistence\Sql
                                             'pass' => $sPass
                                             );
 
-            $this->_pdo = new \PDO($sDsn, $sUser, $sPass);
+			if (MYSQL_ENCODING !== '')
+			{
+				$this->_pdo = new \PDO($sDsn,
+									   $sUser,
+									   $sPass,
+									   array(\PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES ' . MYSQL_ENCODING));
+			}
+
+			else
+			{
+				$this->_pdo = new \PDO($sDsn, $sUser, $sPass);
+			}
             $this->_bConnected = true;
         }
 

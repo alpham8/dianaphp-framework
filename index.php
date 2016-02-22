@@ -1,5 +1,5 @@
 <?php
-require('lib/config.php');
+require('Lib' . DIRECTORY_SEPARATOR . 'config.php');
 require(ROOT_PATH . 'vendor' . DIRECTORY_SEPARATOR . 'autoload.php');
 
 function require_file($sFile)

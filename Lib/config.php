@@ -17,6 +17,7 @@ unset($paths);
 // Database Connection
 define('WEB_LINK', 'http://localhost/web/');
 define('DB_DSN', 'mysql:host=localhost;dbname=db');
+define('MYSQL_ENCODING', 'UTF8');
 define('DB_USER', 'root');
 define('DB_PASS', '');
 
