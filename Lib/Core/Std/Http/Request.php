@@ -32,6 +32,7 @@ namespace Diana\Core\Std\Http
 		protected $_sRequestMethod = self::METHOD_GET;
 		protected $_arHeaders = array();
 		protected $_sBaseUri;
+		protected $_arAcceptEncodings = array();
 
 		public function __construct()
 		{
@@ -79,6 +80,8 @@ namespace Diana\Core\Std\Http
 
 			$sAppRoot = new String(APP_ROOT);
 			$this->_sBaseUri = $this->_sRequestUri->substring(0, $this->_sRequestUri->indexOf($sAppRoot) + $sAppRoot->length);
+			// TODO: doest not work on redirecting
+//			$this->parseAcceptEncoding();
 
 			// TODO: besseres Fallback
 			\Locale::setDefault(checkstring($this->_sPreferedLanguage) ? $this->_sPreferedLanguage->__toString() : 'en-GB');
@@ -196,6 +199,20 @@ namespace Diana\Core\Std\Http
 
 		public function getParam(String $sKey)
 		{
+			$sVal = $this->getRawParam($sKey);
+
+			if ($sVal === null && $sVal instanceof String === false)
+			{
+				return null;
+			}
+
+			$esc = new Escaper($sVal);
+			$esc->escapeAll();
+			return $esc->getEscaped();
+		}
+
+		public function getRawParam(String $sKey)
+		{
 			$sRet = null;
 			if ($this->isGet())
 			{
@@ -292,6 +309,61 @@ namespace Diana\Core\Std\Http
 		public function getRequestUri()
 		{
 			return $this->_sRequestUri;
+		}
+
+		public function parseAcceptEncoding()
+		{
+			function sortQuantities($old, $new)
+			{
+				return strcmp($old, $new);
+			}
+
+			$arBuilder = array();
+			// Test-Case below
+			//preg_match_all('/\w+(;q=\d{1}\.\d{1}|(?=,))/x', 'gzip;q=1.0, deflate;q=0.8, lzma, sdch', $arBuilder);
+			preg_match_all('/\w+(;q=\d{1}\.\d{1}|(?=,))/x', $_SERVER['HTTP_ACCEPT_ENCODING'], $arBuilder);
+
+
+			// it have quantities, sort them
+			if (count($arBuilder) === 2)
+			{
+				$this->_arAcceptEncodings = array();
+
+				if (empty($arBulder[1][0]))
+				{
+					// take the first element and give an quantity of 1.0
+					$sVal = new String($arBuilder[0][0]);
+					$this->_arAcceptEncodings = array('1.0' => $sVal);
+				}
+
+				else
+				{
+					foreach ($arBuilder[1] as $index => $value)
+					{
+						// remove semicolon at the beginng of the key. No need for looping twice over it
+						$sVal = new String($arBuilder[0][$index]);
+						$this->_arAcceptEncodings[substr($value, 3)] = $sVal->substring(0, $sVal->indexOf(';'));
+					}
+
+					uasort($this->_arAcceptEncodings, array("\\Diana\\Core\Std\\Http\\Request", '_sortQuantities'));
+				}
+			}
+		}
+
+		protected function _sortQuantities($sOld, $sNew)
+		{
+			// nice and smooth String class handling ;-)
+			return $sNew->compareTo($Old);
+		}
+
+		public function getAcceptEncodings()
+		{
+			if (empty($this->_arAcceptEncodings))
+			{
+				return false;
+			}
+
+			return $this->_arAcceptEncodings;
 		}
 	}
 }

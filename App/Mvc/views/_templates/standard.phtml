@@ -1,0 +1,24 @@
+<!Doctype html>
+<html>
+    <head>
+        <meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+        <?php
+        // page title
+        $this->setTitle('DinaPHP Intro');
+        // styles
+		$this->appendStyle(WEB_LINK . 'css/standard.css');
+        ?>
+    </head>
+    <body>
+        This is the default template.
+        Here you may place some outer content, which you need multiple times.
+        <?php
+        // the call which renders the individual view of each action.
+        // This needs to be placed in the template, so that we know on which position you would like
+        // to place your view.
+        $this->renderView();
+        ?>
+    </body>
+</html>

@@ -52,7 +52,10 @@ namespace Diana\Core\Mvc
 			{
 				if (empty($this->_sView))
 				{
-					$this->_view->_sViewFile = ROOT_PATH . 'app/mvc/views/' . $this->_sControllerName . '/' . $this->_sActionName . '.phtml';
+					$this->_view->_sViewFile = ROOT_PATH . 'App' . DIRECTORY_SEPARATOR . 'Mvc'
+												. DIRECTORY_SEPARATOR . 'views' . DIRECTORY_SEPARATOR
+												. $this->_sControllerName . DIRECTORY_SEPARATOR
+												. $this->_sActionName . '.phtml';
 				}
 
 				else

@@ -1,6 +1,7 @@
 <IfModule mod_rewrite.c>
     RewriteEngine On
     # Folders / files to exclude from rewrite divided by Pipe goes here:
+    RewriteRule (^|/)install(/|$) - [L,NC]
     RewriteRule (^|/)web(/|$) - [L,NC]
 
     # turn empty requests into requests for "index.php",
@@ -14,3 +15,4 @@
 
     RewriteRule ^(.+)$ index.php [QSA,L]
 </IfModule>
+

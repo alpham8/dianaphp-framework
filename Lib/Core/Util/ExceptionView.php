@@ -33,12 +33,12 @@ namespace Diana\Core\Util
 				}
 			}
 
-			if (!isset($sRet) || $sRet == null)
+			if (!isset($sRet) || $sRet === null)
 			{
 				return null;
 			}
 
-			return new String($sRet);
+			return $sRet;
 		}
 	}
 }

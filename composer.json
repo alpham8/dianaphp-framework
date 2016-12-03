@@ -1,14 +1,15 @@
 {
-	"name": "Diana PHP",
-	"version": "0.1.2",
-	"description": "A simple PHP framework with ease to use.",
+	"name": "DianaPHP",
+	"version": "0.9.1",
+	"description": "A simple PHP framework with an implementation of the mvc design pattern, an ORM and a String class.",
 	"keywords":
 				[
 					"php",
 					"framework",
-					"psr-4"
+					"dianaphp",
+					"PSR-4"
 				],
-	"license": "Apache-2.0",
+	"license": "MIT",
 	"authors":
 				[
 					{
@@ -23,7 +24,8 @@
 	"type": "project",
 	"autoload":
 				{
-					"psr-4": {
+					"psr-4":
+							{
 								"Diana\\": "Lib/",
 								"App\\": "App/"
 							}

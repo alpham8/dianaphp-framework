@@ -2,9 +2,13 @@
 namespace App\Mvc\Controller
 {
 	use Diana\Core\Std\String;
-	use App\Src\Clanscript20Controller;
+	use Diana\Core\Mvc\BaseController;
 
-	class AjaxController extends Clanscript20Controller
+	/**
+	 * This is a simple exapmple class which shows you
+	 * how you may handle Ajax Request made to the backend.
+	 */
+	class AjaxController extends BaseController
 	{
 		protected $_jsonMdl;
 

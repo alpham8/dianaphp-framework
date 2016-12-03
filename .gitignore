@@ -1,0 +1,5 @@
+vendor/
+*.komodoproject
+Lib/config.php
+.directory
+node_modules/

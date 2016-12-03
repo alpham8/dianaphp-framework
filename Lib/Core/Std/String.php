@@ -35,7 +35,7 @@ namespace Diana\Core\Std
 			{
 				$strCurrent = $strCurrent->__toString();
 			}
-			
+
 			elseif (!is_string($strCurrent))
 			{
 				self::_typeError('Class String must be initiliazed with a String. Trace: '
@@ -157,6 +157,14 @@ namespace Diana\Core\Std
 			return $bRet;
 		}
 
+		/**
+		 * matches a string by the given regular expression pattern
+		 *
+		 * @param string $strRegexPattern the pattern to search for
+		 * @param array $arMatches       the found results, if given
+		 *
+		 * @return boolean    true if matched, otherwise false
+		 */
 		public function matches($strRegexPattern, &$arMatches = null)
 		{
 			if ($this->_bMb)
@@ -206,6 +214,13 @@ namespace Diana\Core\Std
 			}
 		}
 
+		/**
+		 * @param int $iStart
+		 * @param int $iEnd optional end
+		 * get the string part at the defined start and end.
+		 * If end is not given, it will give back the whole string back at the start offset
+		 * @return String a new String instance
+		 */
 		public function substring($iStart, $iEnd = 0)
 		{
 			if ($iEnd > 0 && $iStart < $iEnd)
@@ -221,6 +236,11 @@ namespace Diana\Core\Std
 			}
 		}
 
+		/**
+		 * remove all whitespaces at the beginning and at the end
+		 *
+		 * @return String    A new String instance
+		 */
 		public function trim()
 		{
 			return new String(trim($this->_strCurrent));

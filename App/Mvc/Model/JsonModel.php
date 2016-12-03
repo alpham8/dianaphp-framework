@@ -4,6 +4,10 @@ namespace App\Mvc\Model
 	use Diana\Core\Std\String;
 
 
+	/**
+	 * A custom model for handling JSON data.
+	 * As in the MVC context this is "strictly seen" also a model.
+	 */
 	class JsonModel
 	{
 		protected $_sBody;

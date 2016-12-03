@@ -628,6 +628,7 @@ namespace Diana\Core\Persistence\Sql
 			switch($sType)
 			{
 				case 'string':
+					$sColumnValue = empty($sColumnValue) ? '' : $sColumnValue;
 					$str = new String($sColumnValue);
 					$this->$sMethod($str);
 				break;
@@ -1187,10 +1188,42 @@ namespace Diana\Core\Persistence\Sql
 			$this->fetchNext();
 		}
 
-		/*
+		/**
+		 * @param array $arCriteria
+		 * this is in addition to fetchNext, if you need the criteria array.
+		 * @return boolean
+		 */
+		public function fetchFirst(array $arCriteria = null)
+		{
+			// fetch everything by the given column values
+			if (!empty($this->_arColumnData) && !is_array($arCriteria) || !empty($this->_arColumnData) && is_array($arCriteria) && !isset($arCriteria['noWhere']))
+			{
+				foreach ($this->_arColumnData as $sName => $data)
+				{
+					$this->_arWhere[] = array(SQL_ESC . $this->_sTableName . SQL_ESC . '.'
+											  . SQL_ESC . $sName . SQL_ESC => array(
+																					BaseModel::CRITERIA_OPERATOR => BaseModel::CRITERIA_EQUALS,
+																					BaseModel::CRITERIA_VALUE => $data,
+																					BaseModel::CRITERIA_CONDITION_CONNECTOR => BaseModel::CRITERIA_AND
+																				   )
+											);
+				}
+			}
+
+			$pdo = $this->_db->getPdo();
+			$this->buildFetch($arCriteria);
+			$this->_stmt = $pdo->prepare($this->_sSQL->__toString(), array(\PDO::ATTR_CURSOR => \PDO::CURSOR_SCROLL));
+			$this->_bindValues($this->_stmt);
+			$this->_stmt->execute();
+			$this->_bCursorFetching = true;
+
+			return $this->fetchNext();
+		}
+
+		/**
 		 * fetching without closing the cursor, e. g. for an Iterator
 		 *
-		 * @return BaseModel || false
+		 * @return boolean
 		 */
 		public function fetchNext()
 		{
