@@ -1,7 +1,7 @@
 <?php
 namespace Diana\Core\Std
 {
-    class Tokenizer implements Iterator
+    class Tokenizer implements \Iterator
     {
         private $tokens = [];
         private $iPos = -1;
@@ -38,4 +38,3 @@ namespace Diana\Core\Std
         }
     }
 }
-?>

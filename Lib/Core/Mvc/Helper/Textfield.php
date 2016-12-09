@@ -1,42 +1,45 @@
 <?php
 use Diana\Core\Std\String;
 
-function textfield(String $sName = null, String $sId = null, String $sVal = null, $bReadonly = null, $iSize = null, $iMaxLength = null)
+function textfield(
+                   String $sName = null,
+                   String $sId = null,
+                   String $sVal = null,
+                   $bReadonly = null,
+                   $iSize = null,
+                   $iMaxLength = null
+                   )
 {
-	$str = '<input type="text"';
+    $str = '<input type="text"';
 
-	if ($sName != null)
-	{
-		$str .= ' name="' .  $sName . '"';
-	}
+    if ($sName != null) {
+        $str .= ' name="' .  $sName . '"';
+    }
 
-	if ($sId != null)
-	{
-		$str .= ' id="' . $sId . '"';
-	}
+    if ($sId != null) {
+        $str .= ' id="' . $sId . '"';
+    }
 
-	if ($sVal != null)
-	{
-		$str .= ' value="' . $sVal . '"';
-	}
+    if ($sVal != null) {
+        $str .= ' value="' . $sVal . '"';
+    }
 
-	if (is_bool($bReadonly) && $bReadonly === true)
-	{
-		$str .= ' readonly';
-	}
+    if (
+        is_bool($bReadonly)
+        && $bReadonly === true
+    ) {
+        $str .= ' readonly';
+    }
 
-	if (is_int($iSize))
-	{
-		$str .= ' size="' . $iSize . '"';
-	}
+    if (is_int($iSize)) {
+        $str .= ' size="' . $iSize . '"';
+    }
 
-	if (is_int($iMaxLength))
-	{
-		$str .= ' maxlength="' . $iMaxLength . '"';
-	}
+    if (is_int($iMaxLength)) {
+        $str .= ' maxlength="' . $iMaxLength . '"';
+    }
 
-	$str .= ' />';
+    $str .= ' />';
 
-	echo $str . PHP_EOL;
+    echo $str . PHP_EOL;
 }
-?>

@@ -1,29 +1,29 @@
 <?php
 namespace Diana\Core\Mvc
 {
-	use Diana\Core\Std\String;
+    use Diana\Core\Std\String;
     use Diana\Core\Mvc\Init\Dispatcher;
-	use Diana\Core\Std\Http\Request;
-	use Diana\Core\Std\Http\Response;
+    use Diana\Core\Std\Http\Request;
+    use Diana\Core\Std\Http\Response;
 
     abstract class Routes
     {
-        private static $_arRoutes = array();
-        private static $_sCurrent;
+        private static $arRoutes = array();
+        private static $sCurrent;
 
         public static function readIni()
         {
             // TODO
         }
 
-        public static function redirect(String $sRedirectController, String $sRedirectAction, $bSoft = true)
+        public static function redirect(
+                                        String $sRedirectController,
+                                        String $sRedirectAction, $bSoft = true
+                                        )
         {
-            if ($bSoft)
-            {
+            if ($bSoft) {
                 Dispatcher::redirect($sRedirectController, $sRedirectAction);
-            }
-            else
-            {
+            } else {
                 $request = new Request();
                 header('Location: '
                        . $request->getBaseUri()
@@ -45,10 +45,8 @@ namespace Diana\Core\Mvc
 
             $sSimple = $sRoute->__toString();
 
-            foreach (self::$_arRoutes as $sRouteKey => $sRouteVal)
-            {
-                if ($sRouteKey === $sSimple)
-                {
+            foreach (self::$arRoutes as $sRouteKey => $sRouteVal) {
+                if ($sRouteKey === $sSimple) {
                     return $sRouteVal;
                 }
             }
@@ -58,8 +56,7 @@ namespace Diana\Core\Mvc
 
         public function addRoute(String $sAlias, String $sRoute)
         {
-            self::$_arRoutes[$sAlias->__toString()] = $sRoute;
+            self::$arRoutes[$sAlias->__toString()] = $sRoute;
         }
     }
 }
-?>

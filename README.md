@@ -55,7 +55,6 @@ namespace App\Mvc\Model
 	use Diana\Core\Std\String;
 	use Diana\Core\Persistence\Sql\BaseModel;
 
-
 	class CustomersModel extends BaseModel
 	{
 		public function __construct()
@@ -63,29 +62,29 @@ namespace App\Mvc\Model
 			parent::__construct();
 
             // define the table name
-			$this->_sTableName = new String('customers');
+			$this->sTableName = new String('customers');
 
             // define your columns
-			$this->_arColumns = array(
-										'id' => 'int',
-                                        'first_name' => 'string',
-                                        'last_name' => 'string',
-										'created_at' => 'date',
-										'description' => 'string',
-                                        'address_id' => 'int'
-								);
+			$this->arColumns = array(
+                                'id' => 'int',
+                                'first_name' => 'string',
+                                'last_name' => 'string',
+                                'created_at' => 'date',
+                                'description' => 'string',
+                                'address_id' => 'int'
+                            );
 
             // if needed define foreign keys.
             // You may also want to define columns which references another column without having an index on that.
             // This is also done here in the form local column name as array key => the foreign table
             // it then references it to the foreign table id column.
-            $this->_arKeys = array(
+            $this->arKeys = array(
                                 'address_id' => 'address'
                             );
 		}
 	}
 }
-?>
+
 ```
 
 #### Some notes on defining Models
@@ -101,9 +100,20 @@ It looks all columns, if some is set and then appends with the and condition con
 
 Otherwise use the where methods on the Model:
 ```
-$customersMdl->addWhereClause(array(SQL_ESC . $customersMdl->getTableName() . SQL_ESC . '.' . SQL_ESC . 'created_at' . SQL_ESC => array(
+$customersMdl->addWhereClause(
+                    array(
+                        SQL_ESC
+                        . $customersMdl->getTableName()
+                        . SQL_ESC
+                        . '.'
+                        . SQL_ESC
+                        . 'created_at'
+                        . SQL_ESC => array(
 									   BaseModel::CRITERIA_OPERATOR => BaseModel::CRITERIA_EQUALS,
-									   BaseModel::CRITERIA_VALUE => new Date('2016-12-01 10:01:59')));
+									   BaseModel::CRITERIA_VALUE => new Date('2016-12-01 10:01:59')
+                                    )
+                    )
+);
 ```
 You need to use several constants to get it wokring.
 First, you need the criteraia operator.
@@ -205,17 +215,22 @@ See the entry above for defining Models
 ### folder structure
 As desribed above, the folder structure is als a convention!
 ### Code conventions
-We will soon change to PSR compatible code conventions. The differences for now are:
-* No need for yoda style conditions. We don't believe that assinging a variable in if condition may break your application. This is bad style, so you shuld not do this in general.
-* open and closing curley braces always have their own lines
-* make an empty line before each return statement
-* make one empty line before and after each if/elseif/else block
-* use datatype prefixes on each simple datatype variables (i for integer, ar for array, s for string (both, class and simple type))
-* use curley braced namespaces
-* each protected and private mehtod or class member sould start with an underscore
-* close php in each file
-* use only one class per file (PSR-4 compliant)
-
+Our conventions are based on the Symfony conventions, which includes all PSR coding standards.
+#### Additionally points
+In addition to that, we have the following data type prefix convention:
+* s for String. In meaning of the class and the php internal data type string
+* i for integer
+* d for Date
+* ar for array
+* no prefix for objects
+#### Indention
+Use four spaces as indention. Tabs are not allowed. Ident only once for multiline function calls, etc.. String concat is one command and does not need any extra indention.
+#### Line Endings
+We use Linux line endings. Just line return without anything.
+#### no Whitespace at the end of each line
+Avoid whitespaces at the end of the line.
+#### Yoda Style comparsion
+We do not need Yoda Style comparsion, because assigning variables inside an comparsion is bad style. You shouldn't use that. So, if you accidently assing a variable in an if statement, you will quickly find the mistake.
 
 ## help wanted
 ### known issues (not fixed, yet)
@@ -230,7 +245,7 @@ We will soon change to PSR compatible code conventions. The differences for now 
 - [ ] complete Framework documentation
 - [ ] API reference (generated from code comments)
 - [ ] Prefix all classes, files etc. with the author, since, version, etc. code comments
-- [ ] reformat code to match to the PSR (or Symfony) conventions
+- [x] reformat code to match to the PSR (or Symfony) conventions
 - [ ] Add a profiler (which will be late binded to the view using output buffer). By adding a profiler, we also need environments. So that we can define which environment should show the profiler.
 - [ ] Add ORM Cache (query cache) with "strategies": Simple (=file), In-Memory (Redis)
 - [ ] Use the String class more as an internal data type. For now, we found no way to resolve it global namespace, but have it also namespaced under our folder

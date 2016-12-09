@@ -14,13 +14,17 @@
  */
 namespace Diana\Core\Std
 {
-	use Diana\Core\Std\String;
+    use Diana\Core\Std\String;
 
     class Date extends \DateTime
     {
         public function __toString()
         {
-            $fmt = new \IntlDateFormatter(\Locale::getDefault(), \IntlDateFormatter::MEDIUM, \IntlDateFormatter::MEDIUM);
+            $fmt = new \IntlDateFormatter(
+                        \Locale::getDefault(),
+                        \IntlDateFormatter::MEDIUM,
+                        \IntlDateFormatter::MEDIUM
+                );
 
             return $fmt->format($this);
         }
@@ -31,4 +35,3 @@ namespace Diana\Core\Std
         }
     }
 }
-?>

@@ -1,100 +1,93 @@
 <?php
 namespace Diana\Core\Mvc
 {
-	use Diana\Core\Std\String;
-	use Diana\Core\Mvc\View;
-	use Diana\Core\Std\Http\Request;
-	use Diana\Core\Std\Http\Response;
+    use Diana\Core\Std\String;
+    use Diana\Core\Mvc\View;
+    use Diana\Core\Std\Http\Request;
+    use Diana\Core\Std\Http\Response;
 
-	class BaseController
-	{
-		protected $_sActionName;
-		protected $_sControllerName;
-		protected $_view;
-		protected $_request;
-		protected $_response;
-		protected $_sView;
-		protected $_bViewEnabled = true;
+    class BaseController
+    {
+        protected $sActionName;
+        protected $sControllerName;
+        protected $view;
+        protected $request;
+        protected $response;
+        protected $sView;
+        protected $bViewEnabled = true;
 
-		public function __construct()
-		{
-			$this->_view = new View();
-		}
+        public function __construct()
+        {
+            $this->view = new View();
+        }
 
-		public function setControllerName($sControllerName)
-		{
-			$this->_sControllerName = $sControllerName;
-		}
+        public function setControllerName($sControllerName)
+        {
+            $this->sControllerName = $sControllerName;
+        }
 
-		public function setActionName($sActionName)
-		{
-			$this->_sActionName = $sActionName;
-		}
+        public function setActionName($sActionName)
+        {
+            $this->sActionName = $sActionName;
+        }
 
-		protected function _setTemplate($sTemplate)
-		{
-			$this->_view->setTemplate($sTemplate);
-		}
+        protected function setTemplate($sTemplate)
+        {
+            $this->view->setTemplate($sTemplate);
+        }
 
-		protected function _disableView()
-		{
-			$this->_bViewEnabled = false;
-		}
+        protected function disableView()
+        {
+            $this->bViewEnabled = false;
+        }
 
-		public function preExec()
-		{
-			return true;
-		}
+        public function preExec()
+        {
+            return true;
+        }
 
-		public function afterExec()
-		{
-			if ($this->_bViewEnabled)
-			{
-				if (empty($this->_sView))
-				{
-					$this->_view->_sViewFile = ROOT_PATH . 'App' . DIRECTORY_SEPARATOR . 'Mvc'
-												. DIRECTORY_SEPARATOR . 'views' . DIRECTORY_SEPARATOR
-												. $this->_sControllerName . DIRECTORY_SEPARATOR
-												. $this->_sActionName . '.phtml';
-				}
+        public function afterExec()
+        {
+            if ($this->bViewEnabled) {
+                if (empty($this->sView)) {
+                    $this->view->sViewFile = ROOT_PATH . 'App' . DIRECTORY_SEPARATOR . 'Mvc'
+                                            . DIRECTORY_SEPARATOR . 'views' . DIRECTORY_SEPARATOR
+                                            . $this->sControllerName . DIRECTORY_SEPARATOR
+                                            . $this->sActionName . '.phtml';
+                } else {
+                    $this->view->sViewFile = $this->sView;
+                }
 
-				else
-				{
-					$this->_view->_sViewFile = $this->_sView;
-				}
+                $this->view->render();
+                $sViewStack = $this->view->getViewStack();
 
-				$this->_view->render();
-				$sViewStack = $this->_view->getViewStack();
+                if ($sViewStack != null && $sViewStack instanceof String) {
+                    $this->response->sendJson(array(), $sViewStack);
+                }
+            }
+        }
 
-				if ($sViewStack != null && $sViewStack instanceof String)
-				{
-					$this->_response->sendJson(array(), $sViewStack);
-				}
-			}
-		}
+        public function setRequest(Request $request)
+        {
+            $this->request = $request;
+            $this->view->setRequest($request);
+        }
 
-		public function setRequest(Request $request)
-		{
-			$this->_request = $request;
-			$this->_view->setRequest($request);
-		}
+        public function setResponse(Response $response)
+        {
+            $this->response = $response;
+            $this->view->setResponse($this->response);
+        }
 
-		public function setResponse(Response $response)
-		{
-			$this->_response = $response;
-			$this->_view->setResponse($this->_response);
-		}
-
-		public function _errorHandler(\Exception $ex)
-		{
-			$this->_bViewEnabled = false;
-			echo 'An Exception has been thrown: ('
-				. $ex->getCode() . ') '
-				. $ex->getMessage()
-				. ' in file ' . $ex->getFile()
-				. ' on Line ' . $ex->getLine();
-			exit(-1);
-		}
-	}
+        public function errorHandler(\Exception $ex)
+        {
+            $this->bViewEnabled = false;
+            echo 'An Exception has been thrown: ('
+                . $ex->getCode() . ') '
+                . $ex->getMessage()
+                . ' in file ' . $ex->getFile()
+                . ' on Line ' . $ex->getLine();
+            exit(-1);
+        }
+    }
 }
-?>

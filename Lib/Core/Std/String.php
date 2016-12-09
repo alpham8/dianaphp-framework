@@ -15,520 +15,620 @@
  */
 namespace Diana\Core\Std
 {
-	use Diana\Core\Util\ExceptionView;
-
-	// TODO: mb_http_output einbauen fuer JSON response
-	class String
-	{
-		private $_strCurrent;
-		private $_bMb;
-		public $length;
-
-		private static function _typeError ($strMsg)
-		{
-			throw new \Exception('Type Error! ' . $strMsg);
-		}
-
-		public function __construct($strCurrent = '')
-		{
-			if ($strCurrent instanceof String)
-			{
-				$strCurrent = $strCurrent->__toString();
-			}
-
-			elseif (!is_string($strCurrent))
-			{
-				self::_typeError('Class String must be initiliazed with a String. Trace: '
-                                    . ExceptionView::prettyPrintTrace());
-			}
-
-			$this->_strCurrent = $strCurrent;
-
-			if (function_exists('mb_detect_encoding') && mb_detect_encoding($this->_strCurrent) !== 'ascii')
-			{
-				$this->_bMb = true;
-				$this->length = mb_strlen($this->_strCurrent);
-			}
-
-			else
-			{
-				$this->_bMb = false;
-				$this->length = strlen($this->_strCurrent);
-			}
-		}
-
-		public function startsWith($strPartToCheck)
-		{
-			if (!is_string($strPartToCheck) && $strPartToCheck instanceof String)
-			{
-				$strPartToCheck = $strPartToCheck->__toString();
-			}
-
-			elseif (!is_string($strPartToCheck))
-			{
-				self::_typeError('Part String must be a String itself.');
-			}
-
-			$strEncoding = $this->_bMb ? mb_strtolower(mb_detect_encoding($strPartToCheck)) : 'ascii';
-
-			if ($strEncoding === 'ascii' && $this->length < strlen($strPartToCheck))
-			{
-				return false;
-			}
-
-			elseif ($strEncoding !== 'ascii' && $this->length < mb_strlen($strPartToCheck))
-			{
-				return false;
-			}
-
-			//substr($this->_strCurrent, 0, strlen($strPartToCheck)) === $strPartToCheck;
-
-			$bRet = false;
-			if ($this->_bMb && $strEncoding !== 'ascii')
-			{
-				$bRet = mb_substr($this->_strCurrent, 0, mb_strlen($strPartToCheck)) === $strPartToCheck;
-			}
-
-			elseif ($this->_bMb && $strEncoding === 'ascii')
-			{
-				$bRet = mb_substr($this->_strCurrent, 0, strlen($strPartToCheck)) === $strPartToCheck;
-			}
-
-			elseif (!$this->_bMb && $strEncoding === 'ascii')
-			{
-				$bRet = substr($this->_strCurrent, 0, strlen($strPartToCheck)) === $strPartToCheck;
-			}
-
-			elseif (!$this->_bMb && $strEncoding !== 'ascii')
-			{
-				$strComparsion = mb_convert_encoding($this->_strCurrent, $strEncoding, 'ascii');
-				$bRet = mb_substr($strComparsion, 0, mb_strlen($strPartToCheck)) === $strPartToCheck;
-			}
-
-			return $bRet;
-		}
-
-		public function endsWith($strPartToCheck)
-		{
-			if (!is_string($strPartToCheck) && $strPartToCheck instanceof String)
-			{
-				$strPartToCheck = $strPartToCheck->__toString();
-			}
-
-			elseif (!is_string($strPartToCheck))
-			{
-				self::_typeError('Part String must be a String itself.');
-			}
-
-			$strEncoding = $this->_bMb ? mb_strtolower(mb_detect_encoding($strPartToCheck)) : 'ascii';
-
-			if ($strEncoding === 'ascii' && $this->length < strlen($strPartToCheck))
-			{
-				return false;
-			}
-
-			elseif ($strEncoding !== 'ascii' && $this->length < mb_strlen($strPartToCheck))
-			{
-				return false;
-			}
-
-			$bRet = false;
-			if ($this->_bMb && $strEncoding !== 'ascii')
-			{
-				$bRet = mb_substr($this->_strCurrent, $this->length -  mb_strlen($strPartToCheck)) === $strPartToCheck;
-			}
-
-			elseif ($this->_bMb && $strEncoding === 'ascii')
-			{
-				$bRet = mb_substr($this->_strCurrent, $this->length - strlen($strPartToCheck)) == $strPartToCheck;
-			}
-
-			elseif (!$this->_bMb && $strEncoding === 'ascii')
-			{
-				$bRet = substr($this->_strCurrent, $this->length - strlen($strPartToCheck)) === $strPartToCheck;
-			}
-
-			elseif (!$this->_bMb && $strEncoding !== 'ascii')
-			{
-				$strComparsion = mb_convert_encoding($this->_strCurrent, $strEncoding, 'ascii');
-				$bRet = mb_substr($strComparsion, $this->length - mb_strlen($strPartToCheck)) === $strPartToCheck;
-			}
-
-			return $bRet;
-		}
-
-		/**
-		 * matches a string by the given regular expression pattern
-		 *
-		 * @param string $strRegexPattern the pattern to search for
-		 * @param array $arMatches       the found results, if given
-		 *
-		 * @return boolean    true if matched, otherwise false
-		 */
-		public function matches($strRegexPattern, &$arMatches = null)
-		{
-			if ($this->_bMb)
-			{
-				//$strRegexPattern = $this->_sanitizeMbRegex($strRegexPattern);
-				$strRegexPattern = $strRegexPattern instanceof String ? $strRegexPattern : new String($strRegexPattern);
-
-				if ($strRegexPattern->startsWith('/'))
-				{
-					$iLastSlash = $strRegexPattern->lastIndexOf('/') + 1;
-					$modifiers = $strRegexPattern->substring($iLastSlash);
-					$modifiers = $modifiers->contains('u') ? $modifiers : new String($modifiers . 'u');
-					$strRegexPattern = new String($strRegexPattern->substring(0, $iLastSlash) . $modifiers);
-				}
-
-				else
-				{
-					$strRegexPattern = new String('/' . $strRegexPattern . '/u');
-				}
-
-				if ($arMatches === null)
-				{
-					return preg_match($strRegexPattern->__toString(), $this->_strCurrent) === 1;
-				}
-
-				else
-				{
-					// safe unicode regex check
-					// could be also done with the u modifier in preg_match_all
-					// @see http://stackoverflow.com/questions/1766485/are-the-php-preg-functions-multibyte-safe/1766546#1766546
-					// @see http://stackoverflow.com/questions/7675627/multi-byte-function-to-replace-preg-match-all
-					//mb_ereg_search_init($this->_strCurrent, $strRegexPattern);
-					//$arMatches = mb_ereg_search_regs($strRegexPattern);
-					//
-					//return is_array($arMatches) && count($arMatches) > 0;
-					// TODO: Fix here maybe with mb_split to get all the matches back and then divide into groups
-
-					return preg_match_all($strRegexPattern, $this->_strCurrent, $arMatches);
-				}
-			}
-
-			else
-			{
-				return $arMatches === null ?
-					preg_match($strRegexPattern, $this->_strCurrent) === 1
-						: preg_match_all($strRegexPattern, $this->_strCurrent, $arMatches);
-			}
-		}
-
-		/**
-		 * @param int $iStart
-		 * @param int $iEnd optional end
-		 * get the string part at the defined start and end.
-		 * If end is not given, it will give back the whole string back at the start offset
-		 * @return String a new String instance
-		 */
-		public function substring($iStart, $iEnd = 0)
-		{
-			if ($iEnd > 0 && $iStart < $iEnd)
-			{
-				$iSubstrLen = $iEnd - $iStart;
-
-				return $this->_bMb ? new String(mb_substr($this->_strCurrent, $iStart, $iSubstrLen)) : new String(substr($this->_strCurrent, $iStart, $iSubstrLen));
-			}
-
-			else
-			{
-				return $this->_bMb ? new String(mb_substr($this->_strCurrent, $iStart)) : new String(substr($this->_strCurrent, $iStart));
-			}
-		}
-
-		/**
-		 * remove all whitespaces at the beginning and at the end
-		 *
-		 * @return String    A new String instance
-		 */
-		public function trim()
-		{
-			return new String(trim($this->_strCurrent));
-		}
-
-		public function lTrim()
-		{
-			return new String(ltrim($this->_strCurrent));
-		}
-
-		public function rTrim()
-		{
-			return new String(rtrim($this->_strCurrent));
-		}
-
-		public function ucFirst()
-		{
-			return new String(ucfirst($this->_strCurrent));
-		}
-
-		public function lcFirst()
-		{
-			if ($this->_bMb)
-			{
-				return new String(mb_strtoupper(mb_substr($this->_strCurrent, 0, 1)) . mb_substr($this->_strCurrent, 1));
-			}
-
-			else
-			{
-				return new String(lcfirst($this->_strCurrent));
-			}
-		}
-
-		public function toLower()
-		{
-			return new String($this->_bMb ? mb_strtolower($this->_strCurrent) : strtolower($this->_strCurrent));
-		}
-
-		public function toUpper()
-		{
-			return new String($this->_bMb ? mb_strtoupper($this->_strCurrent) : strtoupper($this->_strCurrent));
-		}
-
-		public function isEmpty()
-		{
-			// 2nd check to return false in case of '0'
-			return empty($this->_strCurrent) && $this->length < 1;
-		}
-
-		public function __toString()
-		{
-			return $this->_strCurrent;
-		}
-
-		public function getEnumerator()
-		{
-			if ($this->_bMb)
-			{
-				$arChars = array();
-				for ($i = 0; $i < $this->length; $i++)
-				{
-					$arChars[] = mb_substr($this->_strCurrent, $i, 1);
-				}
-
-				return $arChars;
-			}
-
-			else
-			{
-				return str_split($this->_strCurrent);
-			}
-		}
-
-		public function indexOf($sSearchTo)
-		{
-			if ($sSearchTo instanceof String)
-			{
-				$sSearchTo = $sSearchTo->__toString();
-			}
-
-			if (empty($sSearchTo))
-			{
-				return -1;
-			}
-
-			return $this->_bMb ?
-				mb_strpos($this->_strCurrent,
-							mb_convert_encoding($sSearchTo, mb_detect_encoding($this->_strCurrent)))
-				: strpos($this->_strCurrent, $sSearchTo);
-		}
-
-		public function lastIndexOf($sSearchTo)
-		{
-			if ($sSearchTo instanceof String)
-			{
-				$sSearchTo = $sSearchTo->__toString();
-			}
-
-			if (empty($sSearchTo))
-			{
-				return -1;
-			}
-
-			return $this->_bMb ?
-				mb_strrpos($this->_strCurrent,
-							mb_convert_encoding($sSearchTo, mb_detect_encoding($this->_strCurrent)))
-				: strrpos($this->_strCurrent, $sSearchTo);
-		}
-
-		public function arrayToString($charArray, $strGlue = '')
-		{
-			return new String(implode($strGlue, $charArray));
-		}
-
-		public function splitBy($str, $iLimit = -1)
-		{
-			$str instanceof String ? $str->__toString() : $str;
-
-			if ($iLimit > -1)
-			{
-				return $this->_bMb ? mb_split($this->_sanitizeMbRegex($str), $this->_strCurrent, $iLimit) : explode($str, $this->_strCurrent, $iLimit);
-			}
-
-			else
-			{
-				return $this->_bMb ? mb_split($this->_sanitizeMbRegex($str), $this->_strCurrent) : explode($str, $this->_strCurrent);
-			}
-		}
-
-		public function splitToStringsBy($str, $iLimit = -1)
-		{
-			$str instanceof String ? $str->__toString() : $str;
-
-			$arRet = $this->splitBy($str, $iLimit);
-			foreach ($arRet as $iIndex => $strCurrent)
-			{
-				$arRet[$iIndex] = new String($strCurrent);
-			}
-
-			return $arRet;
-		}
-
-		public function replace($strSearch, $strReplace)
-		{
-			$strSearch = $strSearch instanceof String ? $strSearch->__toString() : $strSearch;
-			$strReplace = $strReplace instanceof String ? $strReplace->__toString() : $strReplace;
-
-			return new String(str_replace($strSearch, $strReplace, $this->_strCurrent));
-		}
-
-		public function regReplace($strPattern, $strReplace)
-		{
-			$strReplace instanceof String ? $strReplace->__toString() : $strReplace;
-
-			if ($this->_bMb)
-			{
-				$sEncoding = mb_detect_encoding($this->_strCurrent);
-				$strPattern = $this->_sanitizeMbRegex($strPattern);
-
-				return new String(mb_ereg_replace($strPattern,
-													mb_convert_encoding($strReplace, $sEncoding),
-													$this->_strCurrent));
-			}
-
-			else
-			{
-				return new String(preg_replace($strPattern, $strReplace, $this->_strCurrent));
-			}
-		}
-
-		public function padRigtht($iSpaces, $bHtml = false)
-		{
-			$strBase = '';
-			if ($bHtml)
-			{
-				$strBase = '<span style="text-align: right;">';
-				for ($i = 1; $i <= $iSpaces; $i++)
-				{
-					$strBase .= '&nbsp;';
-				}
-				$strBase .= $this->_strCurrent . '</span>';
-			}
-			else
-			{
-				for ($j = 1; $j <= $iSpaces; $i++)
-				{
-					$strBase .= ' ';
-				}
-				$strBase .= $this->_strCurrent;
-			}
-			return new String($strBase);
-		}
-
-		public function padLeft($iSpaces, $bHtml = false)
-		{
-			$strBase = '';
-			if ($bHtml)
-			{
-				$strBase = '<span style="text-align: left;">';
-				for ($i = 1; $i <= $iSpaces; $i++)
-				{
-					$strBase .= '&nbsp;';
-				}
-				$strBase .= $this->_strCurrent;
-			}
-			else
-			{
-				for ($j = 1; $j <= $iSpaces; $j++)
-				{
-					$strBase .= ' ';
-				}
-				$strBase .= $this->_strCurrent;
-			}
-
-			return new String($strBase);
-		}
-
-		public function contains($strNeedle)
-		{
-			$strNeedle = $strNeedle instanceof String ? $strNeedle->__toString() : $strNeedle;
-
-			if ($this->_bMb)
-			{
-				$sEncoding = mb_detect_encoding($this->_strCurrent);
-
-				return mb_strpos($this->_strCurrent, mb_convert_encoding($strNeedle, $sEncoding)) != false;
-			}
-
-			else
-			{
-				return strpos($this->_strCurrent, $strNeedle) != false;
-			}
-		}
-
-		public function compareTo($strToCompare)
-		{
-			$strToCompare = $strToCompare instanceof String ? $strToCompare->__toString() : $strToCompare;
-
-			return strcmp($this->_strCurrent, $strToCompare);
-		}
-
-		public function equals($sEqualTo)
-		{
-			if ($sEqualTo instanceof String)
-			{
-				$sEqualTo = $sEqualTo->__toString();
-			}
-
-			return $this->_strCurrent === $sEqualTo;
-		}
-
-		protected function _sanitizeMbRegex($strRegexPattern)
-		{
-			$strRegexPattern = $strRegexPattern instanceof String ? $strRegexPattern : new String($strRegexPattern);
-			$sEncoding = mb_detect_encoding($this->_strCurrent);
-			mb_regex_encoding($sEncoding);
-			$strRegexPattern = new String(mb_convert_encoding($strRegexPattern->__toString(), $sEncoding));
-
-			if ($strRegexPattern->startsWith('/') && $strRegexPattern->endsWith('/') && $strRegexPattern->length > 1)
-			{
-				return  mb_substr($strRegexPattern->__toString(), 1, $strRegexPattern->length - 2);
-			}
-
-			else
-			{
-				$strRegexPattern = $strRegexPattern->replace('/', '\/');
-				$strRegexPattern = $strRegexPattern->replace('?', '\?');
-				$strRegexPattern = $strRegexPattern->replace('(', '\(');
-				$strRegexPattern = $strRegexPattern->replace(')', '\)');
-				$strRegexPattern = $strRegexPattern->replace('*', '\*');
-				$strRegexPattern = $strRegexPattern->replace('[', '\[');
-				$strRegexPattern = $strRegexPattern->replace('{', '\{');
-				$strRegexPattern = $strRegexPattern->replace('}', '\}');
-				$strRegexPattern = $strRegexPattern->replace('.', '\.');
-				$strRegexPattern = $strRegexPattern->replace('|', '\|');
-
-				return $strRegexPattern->__toString();
-			}
-
-			return $strRegexPattern->startsWith('/')
-						&& $strRegexPattern->endsWith('/')
-						&& $strRegexPattern->length > 1
-							? mb_substr($strRegexPattern->__toString(), 1, $strRegexPattern->length - 2)
-								: $strRegexPattern->replace('/', '\/')->replace('?', '\?')->__toString();
-			//return $strRegexPattern->length > 1
-			//	? $strRegexPattern->__toString()
-			//		: $strRegexPattern->replace('/', '\/')->replace('?', '\?')->__toString();
-		}
-	}
+    use Diana\Core\Util\ExceptionView;
+
+    // TODO: mb_http_output einbauen fuer JSON response
+    class String
+    {
+        private $strCurrent;
+        private $bMb;
+        public $length;
+
+        private static function _typeError($strMsg)
+        {
+            throw new \Exception('Type Error! ' . $strMsg);
+        }
+
+        public function __construct($strCurrent = '')
+        {
+            if ($strCurrent instanceof String) {
+                $strCurrent = $strCurrent->__toString();
+            } elseif (!is_string($strCurrent)) {
+                self::typeError(
+                    'Class String must be initiliazed with a String. Trace: '
+                    . ExceptionView::prettyPrintTrace()
+                );
+            }
+
+            $this->strCurrent = $strCurrent;
+
+            if (
+                function_exists('mb_detect_encoding')
+                && mb_detect_encoding($this->strCurrent) !== 'ascii'
+            ) {
+                $this->bMb = true;
+                $this->length = mb_strlen($this->strCurrent);
+            } else {
+                $this->bMb = false;
+                $this->length = strlen($this->strCurrent);
+            }
+        }
+
+        public function startsWith($strPartToCheck)
+        {
+            if (!is_string($strPartToCheck)
+                && $strPartToCheck instanceof String
+            ) {
+                $strPartToCheck = $strPartToCheck->__toString();
+            } elseif (!is_string($strPartToCheck)) {
+                self::typeError('Part String must be a String itself.');
+            }
+
+            $strEncoding = $this->bMb
+                            ? mb_strtolower(mb_detect_encoding($strPartToCheck))
+                            : 'ascii';
+
+            if (
+                $strEncoding === 'ascii'
+                && $this->length < strlen($strPartToCheck)
+            ) {
+                return false;
+            } elseif (
+                $strEncoding !== 'ascii'
+                && $this->length < mb_strlen($strPartToCheck)
+            ) {
+                return false;
+            }
+
+            $bRet = false;
+
+            if ($this->bMb && $strEncoding !== 'ascii') {
+                $bRet = mb_substr(
+                            $this->strCurrent,
+                            0,
+                            mb_strlen($strPartToCheck)
+                        ) === $strPartToCheck;
+            } elseif (
+                $this->bMb
+                && $strEncoding === 'ascii'
+            ) {
+                $bRet = mb_substr(
+                            $this->strCurrent,
+                            0,
+                            strlen($strPartToCheck)
+                        ) === $strPartToCheck;
+            } elseif (
+                !$this->bMb
+                && $strEncoding === 'ascii'
+            ) {
+                $bRet = substr(
+                            $this->strCurrent,
+                            0,
+                            strlen($strPartToCheck)
+                        ) === $strPartToCheck;
+            } elseif (
+                !$this->bMb
+                && $strEncoding !== 'ascii'
+            ) {
+                $strComparsion = mb_convert_encoding($this->strCurrent, $strEncoding, 'ascii');
+                $bRet = mb_substr(
+                            $strComparsion,
+                            0,
+                            mb_strlen($strPartToCheck)
+                        ) === $strPartToCheck;
+            }
+
+            return $bRet;
+        }
+
+        public function endsWith($strPartToCheck)
+        {
+            if (
+                !is_string($strPartToCheck)
+                && $strPartToCheck instanceof String
+            ) {
+                $strPartToCheck = $strPartToCheck->__toString();
+            } elseif (!is_string($strPartToCheck)) {
+                self::typeError('Part String must be a String itself.');
+            }
+
+            $strEncoding = $this->bMb
+                            ? mb_strtolower(mb_detect_encoding($strPartToCheck))
+                            : 'ascii';
+
+            if (
+                $strEncoding === 'ascii'
+                && $this->length < strlen($strPartToCheck)
+            ) {
+                return false;
+            } elseif (
+                $strEncoding !== 'ascii'
+                && $this->length < mb_strlen($strPartToCheck)
+            ) {
+                return false;
+            }
+
+            $bRet = false;
+
+            if (
+                $this->bMb
+                && $strEncoding !== 'ascii'
+            ) {
+                $bRet = mb_substr(
+                            $this->strCurrent,
+                            $this->length -  mb_strlen($strPartToCheck)
+                        ) === $strPartToCheck;
+            } elseif (
+                $this->bMb
+                && $strEncoding === 'ascii'
+            ) {
+                $bRet = mb_substr(
+                            $this->strCurrent,
+                            $this->length - strlen($strPartToCheck)
+                        ) == $strPartToCheck;
+            } elseif (
+                !$this->bMb
+                && $strEncoding === 'ascii'
+            ) {
+                $bRet = substr(
+                            $this->strCurrent,
+                            $this->length - strlen($strPartToCheck)
+                        ) === $strPartToCheck;
+            } elseif (
+                !$this->bMb
+                && $strEncoding !== 'ascii'
+            ) {
+                $strComparsion = mb_convert_encoding(
+                                    $this->strCurrent,
+                                    $strEncoding, 'ascii'
+                                );
+                $bRet = mb_substr(
+                            $strComparsion,
+                            $this->length - mb_strlen($strPartToCheck)
+                        ) === $strPartToCheck;
+            }
+
+            return $bRet;
+        }
+
+        /**
+         * matches a string by the given regular expression pattern
+         *
+         * @param string $strRegexPattern the pattern to search for
+         * @param array $arMatches       the found results, if given
+         *
+         * @return boolean    true if matched, otherwise false
+         */
+        public function matches($strRegexPattern, &$arMatches = null)
+        {
+            if ($this->bMb) {
+                $strRegexPattern = $strRegexPattern instanceof String
+                                        ? $strRegexPattern
+                                        : new String($strRegexPattern);
+
+                if ($strRegexPattern->startsWith('/')) {
+                    $iLastSlash = $strRegexPattern->lastIndexOf('/') + 1;
+                    $modifiers = $strRegexPattern->substring($iLastSlash);
+                    $modifiers = $modifiers->contains('u')
+                                    ? $modifiers
+                                    : new String($modifiers . 'u');
+                    $strRegexPattern = new String(
+                                        $strRegexPattern
+                                            ->substring(
+                                                0,
+                                                $iLastSlash
+                                            )
+                                        . $modifiers
+                                        );
+                } else {
+                    $strRegexPattern = new String('/' . $strRegexPattern . '/u');
+                }
+
+                if ($arMatches === null) {
+                    return preg_match($strRegexPattern->__toString(), $this->strCurrent) === 1;
+                } else {
+                    // safe unicode regex check
+                    // could be also done with the u modifier in preg_match_all
+                    // @see http://stackoverflow.com/questions/1766485/are-the-php-preg-functions-multibyte-safe/1766546#1766546
+                    // @see http://stackoverflow.com/questions/7675627/multi-byte-function-to-replace-preg-match-all
+                    //mb_ereg_search_init($this->strCurrent, $strRegexPattern);
+                    //$arMatches = mb_ereg_search_regs($strRegexPattern);
+                    //
+                    //return is_array($arMatches) && count($arMatches) > 0;
+                    // TODO: Fix here maybe with mb_split to get all the matches back and then divide into groups
+
+                    return preg_match_all($strRegexPattern, $this->strCurrent, $arMatches);
+                }
+            } else {
+                return $arMatches === null
+                    ? preg_match(
+                        $strRegexPattern,
+                        $this->strCurrent
+                    ) === 1
+                    : preg_match_all(
+                        $strRegexPattern,
+                        $this->strCurrent,
+                        $arMatches
+                    );
+            }
+        }
+
+        /**
+         * @param int $iStart
+         * @param int $iEnd optional end
+         * get the string part at the defined start and end.
+         * If end is not given, it will give back the whole string back at the start offset
+         * @return String a new String instance
+         */
+        public function substring($iStart, $iEnd = 0)
+        {
+            if (
+                $iEnd > 0
+                && $iStart < $iEnd
+            ) {
+                $iSubstrLen = $iEnd - $iStart;
+
+                return $this->bMb
+                            ? new String(
+                                mb_substr(
+                                    $this->strCurrent,
+                                    $iStart,
+                                    $iSubstrLen
+                                )
+                            ) : new String(
+                                substr(
+                                    $this->strCurrent,
+                                    $iStart,
+                                    $iSubstrLen
+                                )
+                            );
+            } else {
+                return $this->bMb
+                    ? new String(
+                        mb_substr(
+                            $this->strCurrent,
+                            $iStart
+                        )
+                    ) : new String(
+                            substr(
+                                $this->strCurrent,
+                                $iStart
+                            )
+                    );
+            }
+        }
+
+        /**
+         * remove all whitespaces at the beginning and at the end
+         *
+         * @return String    A new String instance
+         */
+        public function trim()
+        {
+            return new String(trim($this->strCurrent));
+        }
+
+        public function lTrim()
+        {
+            return new String(ltrim($this->strCurrent));
+        }
+
+        public function rTrim()
+        {
+            return new String(rtrim($this->strCurrent));
+        }
+
+        public function ucFirst()
+        {
+            return new String(ucfirst($this->strCurrent));
+        }
+
+        public function lcFirst()
+        {
+            if ($this->bMb) {
+                return new String(
+                    mb_strtoupper(
+                        mb_substr(
+                            $this->strCurrent,
+                            0,
+                            1
+                        )
+                    )
+                    . mb_substr(
+                        $this->strCurrent,
+                        1
+                    )
+                );
+            } else {
+                return new String(lcfirst($this->strCurrent));
+            }
+        }
+
+        public function toLower()
+        {
+            return new String(
+                $this->bMb
+                    ? mb_strtolower($this->strCurrent)
+                    : strtolower($this->strCurrent)
+            );
+        }
+
+        public function toUpper()
+        {
+            return new String(
+                $this->bMb
+                    ? mb_strtoupper($this->strCurrent)
+                    : strtoupper($this->strCurrent)
+            );
+        }
+
+        public function isEmpty()
+        {
+            // 2nd check to return false in case of '0'
+            return empty($this->strCurrent) && $this->length < 1;
+        }
+
+        public function __toString()
+        {
+            return $this->strCurrent;
+        }
+
+        public function getEnumerator()
+        {
+            if ($this->bMb) {
+                $arChars = array();
+                for ($i = 0; $i < $this->length; $i++) {
+                    $arChars[] = mb_substr($this->strCurrent, $i, 1);
+                }
+
+                return $arChars;
+            } else {
+                return str_split($this->strCurrent);
+            }
+        }
+
+        public function indexOf($sSearchTo)
+        {
+            if ($sSearchTo instanceof String) {
+                $sSearchTo = $sSearchTo->__toString();
+            }
+
+            if (empty($sSearchTo)) {
+                return -1;
+            }
+
+            return $this->bMb ?
+                mb_strpos(
+                    $this->strCurrent,
+                    mb_convert_encoding(
+                        $sSearchTo,
+                        mb_detect_encoding($this->strCurrent)
+                    )
+                )
+                : strpos(
+                    $this->strCurrent,
+                    $sSearchTo
+                );
+        }
+
+        public function lastIndexOf($sSearchTo)
+        {
+            if ($sSearchTo instanceof String) {
+                $sSearchTo = $sSearchTo->__toString();
+            }
+
+            if (empty($sSearchTo)) {
+                return -1;
+            }
+
+            return $this->bMb
+                ? mb_strrpos(
+                    $this->strCurrent,
+                    mb_convert_encoding(
+                        $sSearchTo,
+                        mb_detect_encoding($this->strCurrent)
+                    )
+                )
+                : strrpos(
+                    $this->strCurrent,
+                    $sSearchTo
+                );
+        }
+
+        public function arrayToString($charArray, $strGlue = '')
+        {
+            return new String(implode($strGlue, $charArray));
+        }
+
+        public function splitBy($str, $iLimit = -1)
+        {
+            $str instanceof String ? $str->__toString() : $str;
+
+            if ($iLimit > -1) {
+                return $this->bMb
+                    ? mb_split(
+                        $this->sanitizeMbRegex($str),
+                        $this->strCurrent,
+                        $iLimit
+                    )
+                    : explode(
+                        $str,
+                        $this->strCurrent,
+                        $iLimit
+                    );
+            } else {
+                return $this->bMb
+                    ? mb_split(
+                        $this->sanitizeMbRegex($str),
+                        $this->strCurrent
+                    )
+                    : explode(
+                        $str,
+                        $this->strCurrent
+                    );
+            }
+        }
+
+        public function splitToStringsBy($str, $iLimit = -1)
+        {
+            $str instanceof String ? $str->__toString() : $str;
+
+            $arRet = $this->splitBy($str, $iLimit);
+            foreach ($arRet as $iIndex => $strCurrent) {
+                $arRet[$iIndex] = new String($strCurrent);
+            }
+
+            return $arRet;
+        }
+
+        public function replace($strSearch, $strReplace)
+        {
+            $strSearch = $strSearch instanceof String ? $strSearch->__toString() : $strSearch;
+            $strReplace = $strReplace instanceof String ? $strReplace->__toString() : $strReplace;
+
+            return new String(str_replace($strSearch, $strReplace, $this->strCurrent));
+        }
+
+        public function regReplace($strPattern, $strReplace)
+        {
+            $strReplace instanceof String ? $strReplace->__toString() : $strReplace;
+
+            if ($this->bMb) {
+                $sEncoding = mb_detect_encoding($this->strCurrent);
+                $strPattern = $this->sanitizeMbRegex($strPattern);
+
+                return new String(
+                    mb_ereg_replace(
+                        $strPattern,
+                        mb_convert_encoding($strReplace, $sEncoding),
+                        $this->strCurrent)
+                );
+            } else {
+                return new String(preg_replace($strPattern, $strReplace, $this->strCurrent));
+            }
+        }
+
+        public function padRigtht($iSpaces, $bHtml = false)
+        {
+            $strBase = '';
+            if ($bHtml) {
+                $strBase = '<span style="text-align: right;">';
+                for ($i = 1; $i <= $iSpaces; $i++) {
+                    $strBase .= '&nbsp;';
+                }
+                $strBase .= $this->strCurrent . '</span>';
+            } else {
+                for ($j = 1; $j <= $iSpaces; $i++) {
+                    $strBase .= ' ';
+                }
+                $strBase .= $this->strCurrent;
+            }
+            return new String($strBase);
+        }
+
+        public function padLeft($iSpaces, $bHtml = false)
+        {
+            $strBase = '';
+            if ($bHtml) {
+                $strBase = '<span style="text-align: left;">';
+                for ($i = 1; $i <= $iSpaces; $i++) {
+                    $strBase .= '&nbsp;';
+                }
+                $strBase .= $this->strCurrent;
+            } else {
+                for ($j = 1; $j <= $iSpaces; $j++) {
+                    $strBase .= ' ';
+                }
+                $strBase .= $this->strCurrent;
+            }
+
+            return new String($strBase);
+        }
+
+        public function contains($strNeedle)
+        {
+            $strNeedle = $strNeedle instanceof String ? $strNeedle->__toString() : $strNeedle;
+
+            if ($this->bMb) {
+                $sEncoding = mb_detect_encoding($this->strCurrent);
+
+                return mb_strpos(
+                    $this->strCurrent,
+                    mb_convert_encoding(
+                        $strNeedle,
+                        $sEncoding
+                    )
+                ) != false;
+            } else {
+                return strpos($this->strCurrent, $strNeedle) != false;
+            }
+        }
+
+        public function compareTo($strToCompare)
+        {
+            $strToCompare = $strToCompare instanceof String
+                                ? $strToCompare->__toString()
+                                : $strToCompare;
+
+            return strcmp($this->strCurrent, $strToCompare);
+        }
+
+        public function equals($sEqualTo)
+        {
+            if ($sEqualTo instanceof String) {
+                $sEqualTo = $sEqualTo->__toString();
+            }
+
+            return $this->strCurrent === $sEqualTo;
+        }
+
+        protected function _sanitizeMbRegex($strRegexPattern)
+        {
+            $strRegexPattern = $strRegexPattern instanceof String
+                                    ? $strRegexPattern
+                                    : new String($strRegexPattern);
+            $sEncoding = mb_detect_encoding($this->strCurrent);
+            mb_regex_encoding($sEncoding);
+            $strRegexPattern = new String(
+                                mb_convert_encoding(
+                                    $strRegexPattern->__toString(),
+                                    $sEncoding
+                                )
+                            );
+
+            if (
+                $strRegexPattern->startsWith('/')
+                && $strRegexPattern->endsWith('/')
+                && $strRegexPattern->length > 1
+            ) {
+                return  mb_substr(
+                    $strRegexPattern->__toString(),
+                    1,
+                    $strRegexPattern->length - 2
+                );
+            } else {
+                $strRegexPattern = $strRegexPattern->replace('/', '\/');
+                $strRegexPattern = $strRegexPattern->replace('?', '\?');
+                $strRegexPattern = $strRegexPattern->replace('(', '\(');
+                $strRegexPattern = $strRegexPattern->replace(')', '\)');
+                $strRegexPattern = $strRegexPattern->replace('*', '\*');
+                $strRegexPattern = $strRegexPattern->replace('[', '\[');
+                $strRegexPattern = $strRegexPattern->replace('{', '\{');
+                $strRegexPattern = $strRegexPattern->replace('}', '\}');
+                $strRegexPattern = $strRegexPattern->replace('.', '\.');
+                $strRegexPattern = $strRegexPattern->replace('|', '\|');
+
+                return $strRegexPattern->__toString();
+            }
+
+            return $strRegexPattern->startsWith('/')
+                && $strRegexPattern->endsWith('/')
+                && $strRegexPattern->length > 1
+                    ? mb_substr($strRegexPattern->__toString(), 1, $strRegexPattern->length - 2)
+                    : $strRegexPattern->replace('/', '\/')->replace('?', '\?')->__toString();
+            //return $strRegexPattern->length > 1
+            //	? $strRegexPattern->__toString()
+            //		: $strRegexPattern->replace('/', '\/')->replace('?', '\?')->__toString();
+        }
+    }
 }
-?>

@@ -14,7 +14,7 @@
  */
 namespace Diana\Core\Util\Authentification
 {
-	use Diana\Core\Std\String;
+    use Diana\Core\Std\String;
 
     class AuthList
     {
@@ -36,45 +36,34 @@ namespace Diana\Core\Util\Authentification
 
         const LIST_KEY_NAME = 'list';
 
-        protected $_rights;
-        protected $_list;
-        protected $_groups;
+        protected $arList;
+        protected $arGroups;
 
         public function __construct()
         {
-            $this->_list = array();
-            $this->_groups = array();
+            $this->arList = array();
+            $this->arGroups = array();
         }
 
-        public function addAction ($sAction)
+        public function addAction($sAction)
         {
-            if (is_callable($sAction))
-            {
-                $this->_list[] = $sAction->__toString();
-            }
-            else
-            {
-                $this->_list[] = $sAction;
+            if (is_callable($sAction)) {
+                $this->arList[] = $sAction->__toString();
+            } else {
+                $this->arList[] = $sAction;
             }
         }
 
-        public function addGroup ($sGroupName, $rights = array())
+        public function addGroup($sGroupName, $rights = array())
         {
             $iRetCode = -2;
-            if (in_array($sGroupName, $this->_groups))
-            {
+            if (in_array($sGroupName, $this->arGroups)) {
                 $iRetCode = self::GROUP_ALREADY_EXISTS;
-            }
-            else
-            {
-                if (empty($rights))
-                {
-                    $this->_groups[$sGroupName] = array();
-                }
-                else
-                {
-
-                    $this->_groups[$sGroupName][self::LIST_KEY_NAME] = $rights;
+            } else {
+                if (empty($rights)) {
+                    $this->arGroups[$sGroupName] = array();
+                } else {
+                    $this->arGroups[$sGroupName][self::LIST_KEY_NAME] = $rights;
                 }
                 $iRetCode = self::GROUP_SUCCESSFULLY_ADDED;
             }
@@ -82,38 +71,31 @@ namespace Diana\Core\Util\Authentification
             return $iRetCode;
         }
 
-        public function setPrimaryUserGroup ($sGroupName, $sUser)
+        public function setPrimaryUserGroup($sGroupName, $sUser)
         {
             $iRetCode = -2;
 
-            foreach ($this->_groups as $sKeyGroupName => $users)
-            {
-                if (in_array($sUser, $users) && $sGroupName === $sKeyGroupName)
-                {
+            foreach ($this->arGroups as $sKeyGroupName => $users) {
+                if (in_array($sUser, $users) && $sGroupName === $sKeyGroupName) {
                     // User already are in the requested group, finish working
                     $iRetCode = self::USER_ALREADY_SET;
                     break;
-                }
-
-                elseif (in_array($sUser, $users) && $sGroupName !== $sKeyGroupName)
-                {
-                    for ($iUserPos = 0; $iUserPos < count($users); $iUserPos++)
-                    {
-                        if ($users[$iUserPos] === $sUser)
-                        {
+                } elseif (
+                    in_array($sUser, $users)
+                    && $sGroupName !== $sKeyGroupName
+                ) {
+                    for ($iUserPos = 0; $iUserPos < count($users); $iUserPos++) {
+                        if ($users[$iUserPos] === $sUser) {
                             $iUserNo = $iUserPos;
                             break;
                         }
                     }
                     unset($users[$iUserNo]);
-                    $this->_groups[$sGroupName][] = $sUser;
+                    $this->arGroups[$sGroupName][] = $sUser;
                     $iRetCode = self::USER_GROUP_CHANGED;
                     break;
-                }
-
-                else
-                {
-                    $this->_groups[$sGroupName][] = $sUser;
+                } else {
+                    $this->arGroups[$sGroupName][] = $sUser;
                     $iRetCode = self::USER_SUCCESSFULLY_ADDED;
                     break;
                 }
@@ -122,95 +104,53 @@ namespace Diana\Core\Util\Authentification
             return $iRetCode;
         }
 
-        public function allowAction ($sGroupName, $sActionName)
+        public function allowAction($sGroupName, $sActionName)
         {
             $iRetCode = -2;
-            if ($this->_groups[$sGroupName][self::LIST_KEY_NAME][$sActionName] === self::ACTION_ACCEPT)
-            {
+            if (
+                $this->arGroups[$sGroupName][self::LIST_KEY_NAME][$sActionName] === self::ACTION_ACCEPT
+            ) {
                 $iRetCode = self::ACTION_ALREADY_ALLOWED;
-            }
-            else
-            {
-                $this->_groups[$sGroupName][self::LIST_KEY_NAME][$sActionName] = self::ACTION_ACCEPT;
+            } else {
+                $this->arGroups[$sGroupName][self::LIST_KEY_NAME][$sActionName] = self::ACTION_ACCEPT;
                 $iRetCode = self::ACTION_SUCCESSFULLY_ALLOWED;
             }
 
             return $iRetCode;
         }
 
-        public function denyAction ($sGroupName, $sActionName)
+        public function denyAction($sGroupName, $sActionName)
         {
             $iRetCode = -2;
-            if ($this->_groups[$sGroupName][self::LIST_KEY_NAME][$sActionName] === self::ACTION_DENY)
-            {
+            if (
+                $this->arGroups[$sGroupName][self::LIST_KEY_NAME][$sActionName] === self::ACTION_DENY
+            ) {
                 $iRetCode = self::ACTION_ALREADY_DENIED;
-            }
-            else
-            {
-                $this->_groups[$sGroupName][self::LIST_KEY_NAME][$sActionName] = self::ACTION_DENY;
+            } else {
+                $this->arGroups[$sGroupName][self::LIST_KEY_NAME][$sActionName] = self::ACTION_DENY;
                 $iRetCode = self::ACTION_SUCESSFULLY_DENIED;
             }
 
             return $iRetCode;
         }
 
-        public function isAllowed ($sUserName, $sActionName)
+        public function isAllowed($sUserName, $sActionName)
         {
             $rwRegular = false;
             $rwBefore = false;
 
-            //$i = 0;
-            //foreach ($this->_groups as $users)
-            //{
-            //    if (in_array($sUserName, $users))
-            //    {
-            //        if (array_key_exists($sActionName, $users[self::LIST_KEY_NAME]))
-            //        {
-            //            $rw = $users[self::LIST_KEY_NAME][$sActionName] === self::ACTION_ACCEPT;
-            //        }
-            //
-            //        else
-            //        {
-            //            $j = 0;
-            //            foreach ($this->_groups as $beforeUsers)
-            //            {
-            //                if (array_key_exists($sActionName, $beforeUsers[self::LIST_KEY_NAME]))
-            //                {
-            //                    $rw = $beforeUsers[self::LIST_KEY_NAME][$sActionName] === self::ACTION_ACCEPT;
-            //                }
-            //
-            //                if ($j === $i)
-            //                {
-            //                    break;
-            //                }
-            //                $j++;
-            //            }
-            //        }
-            //
-            //        break;
-            //    }
-            //    $i++;
-            //}
-
             $i = 0;
             $iFoundGroup = 0;
             $iFoundActionBefore = 0;
-            foreach ($this->_groups as $users)
-            {
-                if (in_array($sUserName, $users))
-                {
+            foreach ($this->arGroups as $users) {
+                if (in_array($sUserName, $users)) {
                     $iFoundGroup = $i;
-                    if (array_key_exists($sActionName, $users[self::LIST_KEY_NAME]))
-                    {
+                    if (array_key_exists($sActionName, $users[self::LIST_KEY_NAME])) {
                         $rwRegular = $users[self::LIST_KEY_NAME][$sActionName] === self::ACTION_ACCEPT;
                     }
                     break;
-                }
-
-                else
-                {
-                    if (array_key_exists($sActionName, $users[self::LIST_KEY_NAME]))
-                    {
+                } else {
+                    if (array_key_exists($sActionName, $users[self::LIST_KEY_NAME])) {
                         $iFoundActionBefore = $i;
                         $rwBefore = $users[self::LIST_KEY_NAME][$sActionName] === self::ACTION_ACCEPT;
                     }
@@ -218,8 +158,7 @@ namespace Diana\Core\Util\Authentification
                 $i++;
             }
 
-            if ($rwRegular)
-            {
+            if ($rwRegular) {
                 return true;
             }
 
@@ -228,8 +167,7 @@ namespace Diana\Core\Util\Authentification
 
         public function dump()
         {
-            var_dump($this->_groups);
+            var_dump($this->arGroups);
         }
     }
 }
-?>

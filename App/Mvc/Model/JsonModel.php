@@ -1,42 +1,40 @@
 <?php
 namespace App\Mvc\Model
 {
-	use Diana\Core\Std\String;
+    use Diana\Core\Std\String;
 
+    /**
+     * A custom model for handling JSON data.
+     * As in the MVC context this is "strictly seen" also a model.
+     */
+    class JsonModel
+    {
+        protected $sBody;
+        protected $arHeader = array();
 
-	/**
-	 * A custom model for handling JSON data.
-	 * As in the MVC context this is "strictly seen" also a model.
-	 */
-	class JsonModel
-	{
-		protected $_sBody;
-		protected $_arHeader = array();
+        public function __construct()
+        {
+            $this->sBody = new String();
+        }
 
-		public function __construct()
-		{
-			$this->_sBody = new String();
-		}
+        public function getBody()
+        {
+            return  $this->sBody;
+        }
 
-		public function getBody()
-		{
-			return  $this->_sBody;
-		}
+        public function setBody($sBody)
+        {
+            $this->sBody = $sBody;
+        }
 
-		public function setBody($sBody)
-		{
-			$this->_sBody = $sBody;
-		}
+        public function getHeader()
+        {
+            return $this->arHeader;
+        }
 
-		public function getHeader()
-		{
-			return $this->_arHeader;
-		}
-
-		public function addHeader(String $sKey, String $sValue)
-		{
-			$this->_arHeader[$sKey->__toString()] = $sValue;
-		}
-	}
+        public function addHeader(String $sKey, String $sValue)
+        {
+            $this->arHeader[$sKey->__toString()] = $sValue;
+        }
+    }
 }
-?>

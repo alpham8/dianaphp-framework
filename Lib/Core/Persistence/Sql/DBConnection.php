@@ -17,106 +17,96 @@ namespace Diana\Core\Persistence\Sql
 {
     class DBConnection
     {
-        protected static $_instance;
-        protected $_defaultCrendens;
-        protected $_bConnected = false;
-        protected $_pdo;
+        protected static $instance;
+        protected $defaultCrendens;
+        protected $bConnected = false;
+        protected $pdo;
 
         protected function __construct($sDsn, $sUser, $sPass)
         {
+            $this->defaultCrendens = array('dsn' => $sDsn,
+                                        'user' => $sUser,
+                                        'pass' => $sPass
+                                    );
 
-            $this->_defaultCrendens = array('dsn' => $sDsn,
-                                            'user' => $sUser,
-                                            'pass' => $sPass
-                                            );
-
-			if (MYSQL_ENCODING !== '')
-			{
-				$this->_pdo = new \PDO($sDsn,
-									   $sUser,
-									   $sPass,
-									   array(\PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES ' . MYSQL_ENCODING));
-			}
-
-			else
-			{
-				$this->_pdo = new \PDO($sDsn, $sUser, $sPass);
-			}
-            $this->_bConnected = true;
+            if (MYSQL_ENCODING !== '') {
+                $this->pdo = new \PDO(
+                                $sDsn,
+                                $sUser,
+                                $sPass,
+                                array(
+                                    \PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES ' . MYSQL_ENCODING
+                                )
+                            );
+            } else {
+                $this->pdo = new \PDO($sDsn, $sUser, $sPass);
+            }
+            $this->bConnected = true;
         }
 
         public static function getConnection($crendentials)
         {
-            if (self::$_instance instanceof DBConnection)
-            {
-                return self::$_instance;
-            }
-
-            elseif (empty($crendentials))
-            {
-                $this->_defaultCrendens = array('dsn' => 'mysql:host=localhost;dbname=marktplatz',
-                                                'user' => 'root',
-                                                'pass' => 'geheim'
-                                                );
-                return self::$_instance = new DBConnection($this->_defaultCrendens['dsn'],
-                                                              $this->_defaultCrendens['user'],
-                                                              $this->_defaultCrendens['pass']
-                                                             );
-            }
-
-            else
-            {
-                return self::$_instance = new DBConnection($crendentials['dsn'], $crendentials['user'], $crendentials['pass']);
+            if (self::$instance instanceof DBConnection) {
+                return self::$instance;
+            } elseif (empty($crendentials)) {
+                $this->defaultCrendens = array(
+                                            'dsn' => 'mysql:host=localhost;dbname=marktplatz',
+                                            'user' => 'root',
+                                            'pass' => 'geheim'
+                                        );
+                return self::$instance = new DBConnection(
+                                            $this->defaultCrendens['dsn'],
+                                            $this->defaultCrendens['user'],
+                                            $this->defaultCrendens['pass']
+                                        );
+            } else {
+                return self::$instance = new DBConnection(
+                                            $crendentials['dsn'],
+                                            $crendentials['user'],
+                                            $crendentials['pass']
+                                        );
             }
         }
 
         public function getPdo()
         {
-            return $this->_pdo;
+            return $this->pdo;
         }
 
         public function getNewPdo()
         {
-            return $this->_pdo = new \PDO($this->_defaultCrendens['dsn'],
-            							$this->_defaultCrendens['user'],
-                                        $this->_defaultCrendens['pass']
-                                        );
+            return $this->pdo = new \PDO(
+                                    $this->defaultCrendens['dsn'],
+                                    $this->defaultCrendens['user'],
+                                    $this->defaultCrendens['pass']
+                                );
         }
 
         public function beginTransaction()
         {
-            if (!$this->_pdo->inTransaction())
-            {
-                return $this->_pdo->beginTransaction();
+            if (!$this->pdo->inTransaction()) {
+                return $this->pdo->beginTransaction();
             }
+
             return -1;
         }
 
         public function rollBack()
         {
-            if ($this->_pdo->inTransaction())
-            {
-                return $this->_pdo->rollBack();
-            }
-
-            else
-            {
+            if ($this->pdo->inTransaction()) {
+                return $this->pdo->rollBack();
+            } else {
                 return false;
             }
         }
 
         public function commit()
         {
-            if ($this->_pdo->inTransaction())
-            {
-                return $this->_pdo->commit();
-            }
-
-            else
-            {
+            if ($this->pdo->inTransaction()) {
+                return $this->pdo->commit();
+            } else {
                 return false;
             }
         }
     }
 }
-?>

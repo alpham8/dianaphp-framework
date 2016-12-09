@@ -35,4 +35,3 @@ class StringTokenizer implements Iterator
         return isset($this->tokens[$this->iPos]);
     }
 }
-?>

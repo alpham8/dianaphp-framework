@@ -1,114 +1,113 @@
 <?php
 namespace Diana\Core\Std
 {
-	use Diana\Core\Std\String;
+    use Diana\Core\Std\String;
 
-	class Email
-	{
-		const M_TYPE_TEXT = 'text';
-		const M_TYPE_HTML = 'text/html';
-		const NO_SUBJECT = '<<No Subjcet>>';
+    class Email
+    {
+        const M_TYPE_TEXT = 'text';
+        const M_TYPE_HTML = 'text/html';
+        const NO_SUBJECT = '<<No Subjcet>>';
 
-		protected $_sType;
-		protected $_sFrom;
-		protected $_sRcpt;
-		protected $_arCC;
-		protected $_arBCC;
-		protected $_sReplyTo;
-		protected $_sSubject;
-		protected $_sBody;
+        protected $sType;
+        protected $sFrom;
+        protected $sRcpt;
+        protected $arCC;
+        protected $arBCC;
+        protected $sReplyTo;
+        protected $sSubject;
+        protected $sBody;
 
-		public function __construct()
-		{
-			$this->_sType = new String(self::M_TYPE_TEXT);
-		}
+        public function __construct()
+        {
+            $this->sType = new String(self::M_TYPE_TEXT);
+        }
 
-		public function setFrom(String $sFrom)
-		{
-			$this->_sFrom = $sFrom;
-		}
+        public function setFrom(String $sFrom)
+        {
+            $this->sFrom = $sFrom;
+        }
 
-		public function setRcpt(String $sRcpt)
-		{
-			$this->_sRcpt = $sRcpt;
-		}
+        public function setRcpt(String $sRcpt)
+        {
+            $this->sRcpt = $sRcpt;
+        }
 
-		public function addCC(String $sCC)
-		{
-			$this->_arBCC[] = $sCC;
-		}
+        public function addCC(String $sCC)
+        {
+            $this->arBCC[] = $sCC;
+        }
 
-		public function addBCC(String $sBCC)
-		{
-			$this->_arBCC[] = $sBCC;
-		}
+        public function addBCC(String $sBCC)
+        {
+            $this->arBCC[] = $sBCC;
+        }
 
-		public function setSubject(String $sSubject)
-		{
-			$this->_sSubject = $sSubject;
-		}
+        public function setSubject(String $sSubject)
+        {
+            $this->sSubject = $sSubject;
+        }
 
-		public function getSubject()
-		{
-			return isset($this->_sSubject) && checkstring($this->_sSubject) ? $this->_sSubject : new String(self::NO_SUBJECT);
-		}
+        public function getSubject()
+        {
+            return isset($this->sSubject)
+                && checkstring($this->sSubject)
+                    ? $this->sSubject
+                    : new String(self::NO_SUBJECT);
+        }
 
-		public function setBody(String $sBody)
-		{
-			$this->_sBody = $sBody;
-		}
+        public function setBody(String $sBody)
+        {
+            $this->sBody = $sBody;
+        }
 
-		public function setReplyTo(String $sReplyTo)
-		{
-			$this->_sReplyTo = $sReplyTo;
-		}
+        public function setReplyTo(String $sReplyTo)
+        {
+            $this->sReplyTo = $sReplyTo;
+        }
 
-		protected function _check()
-		{
-			return checkstring($this->_sFrom)  && checkstring($this->_sRcpt) && checkstring($this->_sBody);
-		}
+        protected function check()
+        {
+            return checkstring($this->sFrom)
+                && checkstring($this->sRcpt)
+                && checkstring($this->sBody);
+        }
 
-		public function send()
-		{
-			if ($this->_check())
-			{
+        public function send()
+        {
+            if ($this->check()) {
+                $sHeaders = "MIME-Version: 1.0\r\n";
 
-				$sHeaders = "MIME-Version: 1.0\r\n";
+                if ($this->sType->equals(self::M_TYPE_TEXT)) {
+                    $sHeaders .= "Content-Type:text/plain;charset=UTF-8\r\n";
+                } else {
+                    $sHeaders .= "Content-Type:text/html;charset=UTF-8\r\n";
+                }
 
-				if ($this->_sType->equals(self::M_TYPE_TEXT))
-				{
-					$sHeaders .= "Content-Type:text/plain;charset=UTF-8\r\n";
-				}
+                $sHeaders .= 'From: ' . $this->sFrom . "\r\n";
 
-				else
-				{
-					$sHeaders .= "Content-Type:text/html;charset=UTF-8\r\n";
-				}
+                if (checkstring($this->sReplyTo)) {
+                    $sHeaders .= 'Reply-To: ' . $this->sReplyTo . "\r\n";
+                }
 
-				$sHeaders .= 'From: ' . $this->_sFrom . "\r\n";
+                if (array_filled($this->arCC)) {
+                    $sHeaders .= 'CC: ' . implode(', ', $this->arCC) . "\r\n";
+                }
 
-				if (checkstring($this->_sReplyTo))
-				{
-					$sHeaders .= 'Reply-To: ' . $this->_sReplyTo . "\r\n";
-				}
+                if (array_filled($this->arBCC)) {
+                    $sHeaders .= 'BCC: ' . implode(', ', $this->arBCC) . "\r\n";
+                }
 
-				if (array_filled($this->_arCC))
-				{
-					$sHeaders .= 'CC: ' . implode(', ', $this->_arCC) . "\r\n";
-				}
+                mail(
+                    $this->sRcpt->__toString(),
+                    $this->getSubject()->__toString(),
+                    $this->sBody->__toString(), $sHeaders
+                );
 
-				if (array_filled($this->_arBCC))
-				{
-					$sHeaders .= 'BCC: ' . implode(', ', $this->_arBCC) . "\r\n";
-				}
+                return true;
+            }
 
-				mail($this->_sRcpt->__toString(), $this->getSubject()->__toString(), $this->_sBody->__toString(), $sHeaders);
-
-				return true;
-			}
-
-			return false;
-		}
-	}
+            return false;
+        }
+    }
 }
-?>

@@ -32,7 +32,6 @@ error_reporting(E_WARNING);
 ini_set('session.gc_maxlifetime', 1200); // 1 hour
 ini_set('session.gc_probability', 50); // 50 percent garbage collection propability
 ini_set('session.gc_divisor', 100);
-ini_set('session.cookie_secure', FALSE);
-ini_set('session.use_only_cookies', TRUE);
-//test
-?>
+ini_set('session.cookie_secure', false);
+ini_set('session.use_only_cookies', true);
+//test;
