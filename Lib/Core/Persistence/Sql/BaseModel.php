@@ -48,7 +48,7 @@ namespace Diana\Core\Persistence\Sql
         protected $arBindValues;
         protected $bCursorFetching = false;
 
-        public function _construct()
+        public function __construct()
         {
             $this->db = DBConnection::getConnection(array(
                             'dsn' => DB_DSN,
@@ -2004,7 +2004,7 @@ namespace Diana\Core\Persistence\Sql
             return in_array(1, $arComparsion) ? 1 : in_array(-1, $arComparsion) ? -1 : 0;
         }
 
-        public function _call($sName, $argv)
+        public function __call($sName, $argv)
         {
             $sName = new String($sName);
 

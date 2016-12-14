@@ -36,43 +36,43 @@ namespace Diana\Core\Std\Http
 
         public function __construct()
         {
-            if (!empty($SERVER['HTTP_ACCEPT_CHARSET'])) {
-                $s = new String($SERVER['HTTP_ACCEPT_CHARSET']);
+            if (!empty($_SERVER['HTTP_ACCEPT_CHARSET'])) {
+                $s = new String($_SERVER['HTTP_ACCEPT_CHARSET']);
                 $this->arAcceptedChars = $s->splitBy(';');
             }
 
-            if (!empty($SERVER['DOCUMENT_ROOT'])) {
-                $this->sDocumentRoot = new String($SERVER['DOCUMENT_ROOT']);
+            if (!empty($_SERVER['DOCUMENT_ROOT'])) {
+                $this->sDocumentRoot = new String($_SERVER['DOCUMENT_ROOT']);
             }
 
-            if (!empty($SERVER['HTTP_REFERER'])) {
-                $this->sReferer = new String($SERVER['HTTP_REFERER']);
+            if (!empty($_SERVER['HTTP_REFERER'])) {
+                $this->sReferer = new String($_SERVER['HTTP_REFERER']);
             }
 
-            if (!empty($SERVER['REMOTE_HOST'])) {
-                $this->sRemoteHost = new String($SERVER['REMOTE_HOST']);
+            if (!empty($_SERVER['REMOTE_HOST'])) {
+                $this->sRemoteHost = new String($_SERVER['REMOTE_HOST']);
             }
 
-            if (!empty($SERVER['REMOTE_ADDR'])) {
-                $this->sRemoteAddr = new String($SERVER['REMOTE_ADDR']);
+            if (!empty($_SERVER['REMOTE_ADDR'])) {
+                $this->sRemoteAddr = new String($_SERVER['REMOTE_ADDR']);
             }
 
-            if (!empty($SERVER['HTTP_CONNECTION'])) {
-                $this->sConnection = new String($SERVER['HTTP_CONNECTION']);
+            if (!empty($_SERVER['HTTP_CONNECTION'])) {
+                $this->sConnection = new String($_SERVER['HTTP_CONNECTION']);
             }
 
 
-            $this->bSecure = !empty($SERVER['HTTPS']);
-            $this->sUserAgent = new String($SERVER['HTTP_USER_AGENT']);
-            $this->sRequestUri = new String(isset($SERVER['REQUEST_URI'])
-                                    ? $SERVER['REQUEST_URI']
-                                    : $SERVER['HTTP_REQUEST_URI']);
-            $this->sRequestUri = new String('http://' . $SERVER['HTTP_HOST']
+            $this->bSecure = !empty($_SERVER['HTTPS']);
+            $this->sUserAgent = new String($_SERVER['HTTP_USER_AGENT']);
+            $this->sRequestUri = new String(isset($_SERVER['REQUEST_URI'])
+                                    ? $_SERVER['REQUEST_URI']
+                                    : $_SERVER['HTTP_REQUEST_URI']);
+            $this->sRequestUri = new String('http://' . $_SERVER['HTTP_HOST']
                                     . $this->sRequestUri->__toString());
 
             $this->parseRawCookies();
             $this->parseAcceptLanguage();
-            $this->sRequestMethod = $SERVER['REQUEST_METHOD'];
+            $this->sRequestMethod = $_SERVER['REQUEST_METHOD'];
             $this->parseHeaders();
 
             $sAppRoot = new String(APP_ROOT);
@@ -91,12 +91,12 @@ namespace Diana\Core\Std\Http
             );
         }
 
-        protected function _parseAcceptLanguage()
+        protected function parseAcceptLanguage()
         {
             // source: http://www.thefutureoftheweb.com/blog/use-accept-language-header
             preg_match_all(
                 '/([a-z]{1,8}(-[a-z]{1,8})?)\s*(;\s*q\s*=\s*(1|0\.[0-9]+))?/i',
-                $SERVER['HTTP_ACCEPT_LANGUAGE'],
+                $_SERVER['HTTP_ACCEPT_LANGUAGE'],
                 $this->arLanguages
             );
 
@@ -129,10 +129,10 @@ namespace Diana\Core\Std\Http
             }
         }
 
-        protected function _parseRawCookies()
+        protected function parseRawCookies()
         {
-            if (isset($SERVER['HTTP_COOKIE'])) {
-                $s = new String($SERVER['HTTP_COOKIE']);
+            if (isset($_SERVER['HTTP_COOKIE'])) {
+                $s = new String($_SERVER['HTTP_COOKIE']);
                 foreach ($s->splitBy(';') as $rawcookie) {
                     $ss = new String($rawcookie);
                     list($k, $v) = $ss->splitBy('=', 2);
@@ -141,10 +141,10 @@ namespace Diana\Core\Std\Http
             }
         }
 
-        protected function _parseHeaders()
+        protected function parseHeaders()
         {
             $arHeaders = headers_list();
-            $arSingleH;
+            $arSingleH = array();
             foreach ($arHeaders as $sHeader) {
                 $sHeader = new String($sHeader);
                 $arSingleH = $sHeader->splitToStringsBy(':');
@@ -227,8 +227,8 @@ namespace Diana\Core\Std\Http
         {
             $sRet = null;
             if ($this->isGet()) {
-                if (array_key_exists($sKey->__toString(), $GET)) {
-                    return new String($GET[$sKey->__toString()]);
+                if (array_key_exists($sKey->__toString(), $_GET)) {
+                    return new String($_GET[$sKey->__toString()]);
                 }
 
                 if (
@@ -254,8 +254,8 @@ namespace Diana\Core\Std\Http
                     }
                 }
             } elseif ($this->isPost()) {
-                if (array_key_exists($sKey->__toString(), $POST)) {
-                    $sRet = new String($POST[$sKey->__toString()]);
+                if (array_key_exists($sKey->__toString(), $_POST)) {
+                    $sRet = new String($_POST[$sKey->__toString()]);
                 }
             }
 
@@ -267,10 +267,10 @@ namespace Diana\Core\Std\Http
             $arRet = array();
             if ($this->isGet()) {
                 if (
-                    is_array($GET)
-                    && count($GET) > 0
+                    is_array($_GET)
+                    && count($_GET) > 0
                 ) {
-                    foreach ($GET as $strKey => $strVal) {
+                    foreach ($_GET as $strKey => $strVal) {
                         $arRet[$strKey] = new String($strVal);
                     }
 
@@ -288,7 +288,7 @@ namespace Diana\Core\Std\Http
                     }
                 }
             } elseif ($this->isPost()) {
-                foreach ($POST as $strKey => $strVal) {
+                foreach ($_POST as $strKey => $strVal) {
                     $arRet[$strKey] = new String($strVal);
                 }
             }
@@ -318,7 +318,7 @@ namespace Diana\Core\Std\Http
             //preg_match_all('/\w+(;q=\d{1}\.\d{1}|(?=,))/x', 'gzip;q=1.0, deflate;q=0.8, lzma, sdch', $arBuilder);
             preg_match_all(
                 '/\w+(;q=\d{1}\.\d{1}|(?=,))/x',
-                $SERVER['HTTP_ACCEPT_ENCODING'],
+                $_SERVER['HTTP_ACCEPT_ENCODING'],
                 $arBuilder
             );
 
@@ -345,16 +345,16 @@ namespace Diana\Core\Std\Http
 
                     uasort(
                         $this->arAcceptEncodings,
-                        array("\\Diana\\Core\Std\\Http\\Request", '_sortQuantities')
+                        array("\\Diana\\Core\\Std\\Http\\Request", 'sortQuantities')
                     );
                 }
             }
         }
 
-        protected function _sortQuantities($sOld, $sNew)
+        protected function sortQuantities($sOld, $sNew)
         {
             // nice and smooth String class handling ;-)
-            return $sNew->compareTo($Old);
+            return $sNew->compareTo($sOld);
         }
 
         public function getAcceptEncodings()

@@ -33,7 +33,7 @@ namespace Diana\Core\Mvc\Init
             self::parseUri($sRequestUri);
         }
 
-        private static function _doBaseStuff()
+        private static function doBaseStuff()
         {
             $sFullCtlName = "App\\Mvc\\Controller\\" . ucfirst(self::$sController . 'Controller');
             $request = new Request();
@@ -64,7 +64,7 @@ namespace Diana\Core\Mvc\Init
 
             if (!headers_sent()) {
                 // send the response if not already done before
-                $this->webRequestGlue->sendResponse();
+                self::$webRequestGlue->sendResponse();
             }
         }
 

@@ -582,7 +582,7 @@ namespace Diana\Core\Std
             return $this->strCurrent === $sEqualTo;
         }
 
-        protected function _sanitizeMbRegex($strRegexPattern)
+        protected function sanitizeMbRegex($strRegexPattern)
         {
             $strRegexPattern = $strRegexPattern instanceof String
                                     ? $strRegexPattern
