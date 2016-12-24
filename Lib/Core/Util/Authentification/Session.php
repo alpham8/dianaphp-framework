@@ -19,14 +19,14 @@ namespace Diana\Core\Util\Authentification
 
         public function set(String $sKey, String $sValue)
         {
-            $SESSION[$sKey->__toString()] = $sValue;
+            $_SESSION[$sKey->__toString()] = $sValue;
         }
 
         public function get(String $sKey)
         {
             $sKeySimple = $sKey->__toString();
-            if (isset($SESSION[$sKeySimple])) {
-                return $SESSION[$sKeySimple];
+            if (isset($_SESSION[$sKeySimple])) {
+                return $_SESSION[$sKeySimple];
             }
             return false;
         }
@@ -34,7 +34,7 @@ namespace Diana\Core\Util\Authentification
         public function remove(String $sKey)
         {
             $sKeySimple = $sKey->__toString();
-            unset($SESSION[$sKeySimple]);
+            unset($_SESSION[$sKeySimple]);
         }
 
         public function destroy()
