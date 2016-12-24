@@ -1,7 +1,7 @@
 <?php
 namespace App\Mvc\Controller
 {
-    use Diana\Core\Std\String;
+    use Diana\Core\Std\StringType;
     use Diana\Core\Mvc\BaseController;
 
     /**
@@ -24,7 +24,7 @@ namespace App\Mvc\Controller
             $bAllowed = parent::preExec();
 
             if ($bAllowed) {
-                $this->response->setDatatype(new String('json'));
+                $this->response->setDatatype(new StringType('json'));
             }
 
             return $bAllowed;
@@ -37,13 +37,13 @@ namespace App\Mvc\Controller
 
         public function errorHandler(\Exception $ex)
         {
-            $sError = new String('An Exception has been thrown: ('
+            $sError = new StringType('An Exception has been thrown: ('
                 . $ex->getCode() . ') '
                 . $ex->getMessage()
                 . ' in file ' . $ex->getFile()
                 . ' on Line ' . $ex->getLine()
             );
-            $this->jsonMdl->addHeader(new String('error'), $sError);
+            $this->jsonMdl->addHeader(new StringType('error'), $sError);
             $this->response->sendJson($this->jsonMdl->getHeader(), $this->jsonMdl->getBody());
         }
     }

@@ -1,7 +1,7 @@
 <?php
 namespace Diana\Core\Mvc\Init
 {
-    use Diana\Core\Std\String;
+    use Diana\Core\Std\StringType;
     use Diana\Core\Std\Http\Request;
     use Diana\Core\Std\Http\Response;
     use Diana\Core\Mvc\Routes;
@@ -14,10 +14,10 @@ namespace Diana\Core\Mvc\Init
         protected static $sAction;
         protected static $webRequestGlue;
 
-        private static function parseUri(String $sRequestUri)
+        private static function parseUri(StringType $sRequestUri)
         {
             if ($sRequestUri->endsWith(APP_ROOT)) {
-                $sRequestUri = new String($sRequestUri->__toString() . 'index/index');
+                $sRequestUri = new StringType($sRequestUri->__toString() . 'index/index');
             }
 
             $sAppRequest = Routes::getRoute($sRequestUri)
@@ -28,7 +28,7 @@ namespace Diana\Core\Mvc\Init
             self::$sAction = $arAction[0];
         }
 
-        public static function init(String $sRequestUri)
+        public static function init(StringType $sRequestUri)
         {
             self::parseUri($sRequestUri);
         }
@@ -74,7 +74,7 @@ namespace Diana\Core\Mvc\Init
             exit(0);
         }
 
-        public static function redirect(String $sController, String $sAction)
+        public static function redirect(StringType $sController, StringType $sAction)
         {
             self::$sController = $sController;
             self::$sAction = $sAction;

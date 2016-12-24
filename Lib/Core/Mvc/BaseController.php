@@ -1,7 +1,7 @@
 <?php
 namespace Diana\Core\Mvc
 {
-    use Diana\Core\Std\String;
+    use Diana\Core\Std\StringType;
     use Diana\Core\Mvc\View;
     use Diana\Core\Std\Http\Request;
     use Diana\Core\Std\Http\Response;
@@ -61,7 +61,7 @@ namespace Diana\Core\Mvc
                 $this->view->render();
                 $sViewStack = $this->view->getViewStack();
 
-                if ($sViewStack != null && $sViewStack instanceof String) {
+                if ($sViewStack != null && $sViewStack instanceof StringType) {
                     $this->response->sendJson(array(), $sViewStack);
                 }
             }

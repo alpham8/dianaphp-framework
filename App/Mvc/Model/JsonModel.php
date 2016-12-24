@@ -1,7 +1,7 @@
 <?php
 namespace App\Mvc\Model
 {
-    use Diana\Core\Std\String;
+    use Diana\Core\Std\StringType;
 
     /**
      * A custom model for handling JSON data.
@@ -14,7 +14,7 @@ namespace App\Mvc\Model
 
         public function __construct()
         {
-            $this->sBody = new String();
+            $this->sBody = new StringType();
         }
 
         public function getBody()
@@ -32,7 +32,7 @@ namespace App\Mvc\Model
             return $this->arHeader;
         }
 
-        public function addHeader(String $sKey, String $sValue)
+        public function addHeader(StringType $sKey, StringType $sValue)
         {
             $this->arHeader[$sKey->__toString()] = $sValue;
         }

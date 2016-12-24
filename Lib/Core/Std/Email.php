@@ -1,7 +1,7 @@
 <?php
 namespace Diana\Core\Std
 {
-    use Diana\Core\Std\String;
+    use Diana\Core\Std\StringType;
 
     class Email
     {
@@ -20,30 +20,30 @@ namespace Diana\Core\Std
 
         public function __construct()
         {
-            $this->sType = new String(self::M_TYPE_TEXT);
+            $this->sType = new StringType(self::M_TYPE_TEXT);
         }
 
-        public function setFrom(String $sFrom)
+        public function setFrom(StringType $sFrom)
         {
             $this->sFrom = $sFrom;
         }
 
-        public function setRcpt(String $sRcpt)
+        public function setRcpt(StringType $sRcpt)
         {
             $this->sRcpt = $sRcpt;
         }
 
-        public function addCC(String $sCC)
+        public function addCC(StringType $sCC)
         {
             $this->arBCC[] = $sCC;
         }
 
-        public function addBCC(String $sBCC)
+        public function addBCC(StringType $sBCC)
         {
             $this->arBCC[] = $sBCC;
         }
 
-        public function setSubject(String $sSubject)
+        public function setSubject(StringType $sSubject)
         {
             $this->sSubject = $sSubject;
         }
@@ -53,15 +53,15 @@ namespace Diana\Core\Std
             return isset($this->sSubject)
                 && checkstring($this->sSubject)
                     ? $this->sSubject
-                    : new String(self::NO_SUBJECT);
+                    : new StringType(self::NO_SUBJECT);
         }
 
-        public function setBody(String $sBody)
+        public function setBody(StringType $sBody)
         {
             $this->sBody = $sBody;
         }
 
-        public function setReplyTo(String $sReplyTo)
+        public function setReplyTo(StringType $sReplyTo)
         {
             $this->sReplyTo = $sReplyTo;
         }

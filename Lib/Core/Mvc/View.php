@@ -1,7 +1,7 @@
 <?php
 namespace Diana\Core\Mvc
 {
-    use Diana\Core\Std\String;
+    use Diana\Core\Std\StringType;
     use Diana\Core\Std\Http\Request;
     use Diana\Core\Std\Http\Response;
 
@@ -41,7 +41,7 @@ namespace Diana\Core\Mvc
         public function setTemplate($sTemplate)
         {
             if ($sTemplate != null) {
-                $sTemplate = $sTemplate instanceof String ? $sTemplate : new String($sTemplate);
+                $sTemplate = $sTemplate instanceof StringType ? $sTemplate : new StringType($sTemplate);
                 $this->sTemplateFile = $sTemplate->endsWith('.phtml')
                                         ? $sTemplate
                                         : $sTemplate . '.phtml';
@@ -73,14 +73,14 @@ namespace Diana\Core\Mvc
             if ($this->hasTemplate()) {
                 include($this->sTemplateFile->__toString());
             } else {
-                include($this->sViewFile instanceof String
+                include($this->sViewFile instanceof StringType
                         ? $this->sViewFile->__toString()
                         : $this->sViewFile
                 );
             }
 
             if ($bJson) {
-                $this->sViewStack = new String(ob_get_contents());
+                $this->sViewStack = new StringType(ob_get_contents());
                 ob_end_clean();
             }
         }

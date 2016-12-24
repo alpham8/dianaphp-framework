@@ -1,15 +1,15 @@
 <?php
 use Diana\Core\Mvc\View;
-use Diana\Core\Std\String;
+use Diana\Core\Std\StringType;
 
-function internalAnchor(View $view, String $sController, String $sAction, $arParams = null)
+function internalAnchor(View $view, StringType $sController, StringType $sAction, $arParams = null)
 {
     $request = $view->getRequest();
     $sParams = '';
 
     if ($arParams != null && is_array($arParams)) {
         foreach ($arParams as $sParamName => $sParamValue) {
-            $sParams = new String($sParams . urlencode($sParamName . '=' . $sParamValue) . '/');
+            $sParams = new StringType($sParams . urlencode($sParamName . '=' . $sParamValue) . '/');
         }
         $sParams = $sParams->endsWith('/')
                     ? $sParams->substring(0, $sParams->length - 1)

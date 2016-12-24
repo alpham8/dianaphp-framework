@@ -1,7 +1,7 @@
 <?php
 namespace App\Mvc\Controller
 {
-    use Diana\Core\Std\String;
+    use Diana\Core\Std\StringType;
     use Diana\Core\Mvc\BaseController;
     use Diana\Core\Persistence\Sql\BaseModel;
     use App\Src\BootstrapPaginator;
@@ -13,7 +13,7 @@ namespace App\Mvc\Controller
             // needs to be called!
             parent::__construct();
             // set our template file here
-            $this->setTemplate(new String(DIANA_TEMPLATES . 'standard.phtml'));
+            $this->setTemplate(new StringType(DIANA_TEMPLATES . 'standard.phtml'));
         }
 
         public function index()
@@ -36,18 +36,18 @@ namespace App\Mvc\Controller
          */
         protected function paginateView(
                                          $sModel,
-                                         String $sController,
-                                         String $sAction, array $arAdditonalParams = null
+                                         StringType $sController,
+                                         StringType $sAction, array $arAdditonalParams = null
                                          )
         {
-            $sFirstEntryId = $this->request->getParam(new String('firstentryid'));
-            $sLastEntryId = $this->request->getParam(new String('lastentryid'));
+            $sFirstEntryId = $this->request->getParam(new StringType('firstentryid'));
+            $sLastEntryId = $this->request->getParam(new StringType('lastentryid'));
 
             $mdl = self::crtBasePaginationMdl($sModel);
 
             if (
                 $sLastEntryId !== null
-                && $sLastEntryId instanceof String
+                && $sLastEntryId instanceof StringType
                 && !$sLastEntryId->isEmpty()
                 && $sFirstEntryId === null
                 ) {
@@ -61,7 +61,7 @@ namespace App\Mvc\Controller
             } elseif (
                       $sLastEntryId === null
                       && $sFirstEntryId !== null
-                      && $sFirstEntryId instanceof String
+                      && $sFirstEntryId instanceof StringType
                       && !$sFirstEntryId->isEmpty()
                       ) {
                 $mdl->addWhereClause(array(
@@ -73,9 +73,9 @@ namespace App\Mvc\Controller
                 ));
             } elseif (
                       $sLastEntryId !== null
-                      && $sLastEntryId instanceof String
+                      && $sLastEntryId instanceof StringType
                       && !$sLastEntryId->isEmpty()
-                      && $sFirstEntryId instanceof String
+                      && $sFirstEntryId instanceof StringType
                       && !$sFirstEntryId->isEmpty()
                       ) {
                 $mdl->addWhereClause(array(

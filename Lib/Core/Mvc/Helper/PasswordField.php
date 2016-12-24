@@ -1,10 +1,10 @@
 <?php
-use Diana\Core\Std\String;
+use Diana\Core\Std\StringType;
 
 function passwordField(
-                       String $sName = null,
-                       String $sId = null,
-                       String $sVal = null,
+                       StringType $sName = null,
+                       StringType $sId = null,
+                       StringType $sVal = null,
                        $iSize = null,
                        $iMaxLength = null,
                        $bDisabled = false

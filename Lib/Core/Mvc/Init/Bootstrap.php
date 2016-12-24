@@ -1,7 +1,7 @@
 <?php
 namespace Diana\Core\Mvc\Init
 {
-    use Diana\Core\Std\String;
+    use Diana\Core\Std\StringType;
     use Diana\Core\Mvc\Init\Dispatcher;
 
     // Localize Langauge for Date settings
@@ -11,10 +11,10 @@ namespace Diana\Core\Mvc\Init
     {
         public function init()
         {
-            $sRequestUri = new String(isset($_SERVER['REQUEST_URI'])
+            $sRequestUri = new StringType(isset($_SERVER['REQUEST_URI'])
                             ? $_SERVER['REQUEST_URI']
                             : $_SERVER['HTTP_REQUEST_URI']);
-            $sRequestUri = new String('http://' . $_SERVER['HTTP_HOST']
+            $sRequestUri = new StringType('http://' . $_SERVER['HTTP_HOST']
                             . $sRequestUri->__toString());
 
             Dispatcher::init($sRequestUri);

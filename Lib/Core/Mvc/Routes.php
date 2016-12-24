@@ -1,7 +1,7 @@
 <?php
 namespace Diana\Core\Mvc
 {
-    use Diana\Core\Std\String;
+    use Diana\Core\Std\StringType;
     use Diana\Core\Mvc\Init\Dispatcher;
     use Diana\Core\Std\Http\Request;
     use Diana\Core\Std\Http\Response;
@@ -17,8 +17,8 @@ namespace Diana\Core\Mvc
         }
 
         public static function redirect(
-                                        String $sRedirectController,
-                                        String $sRedirectAction, $bSoft = true
+                                        StringType $sRedirectController,
+                                        StringType $sRedirectAction, $bSoft = true
                                         )
         {
             if ($bSoft) {
@@ -39,9 +39,9 @@ namespace Diana\Core\Mvc
          *
          * @return String $alias
          */
-        public static function getRoute(String $sRoute)
+        public static function getRoute(StringType $sRoute)
         {
-            $sFound = new String();
+            $sFound = new StringType();
 
             $sSimple = $sRoute->__toString();
 
@@ -54,7 +54,7 @@ namespace Diana\Core\Mvc
             return $sRoute;
         }
 
-        public function addRoute(String $sAlias, String $sRoute)
+        public function addRoute(StringType $sAlias, StringType $sRoute)
         {
             self::$arRoutes[$sAlias->__toString()] = $sRoute;
         }

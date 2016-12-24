@@ -1,7 +1,7 @@
 <?php
 namespace Diana\Core\Persistence\Sql
 {
-    use Diana\Core\Std\String;
+    use Diana\Core\Std\StringType;
     use Diana\Core\Std\Date;
     use Diana\Core\Persistence\Sql\DBConnection;
     use Diana\Core\Persistence\Sql\ModelException;
@@ -129,12 +129,12 @@ namespace Diana\Core\Persistence\Sql
          */
         protected function encodeTableName($sTableName)
         {
-            $sTable = $sTableName instanceof String ? $sTableName : new String($sTableName);
+            $sTable = $sTableName instanceof StringType ? $sTableName : new StringType($sTableName);
             $arMatches = array();
 
             if ($sTable->matches('/[A-Z]/', $arMatches)) {
                 foreach ($arMatches[0] as $sMatch) {
-                    $sMatch = new String($sMatch);
+                    $sMatch = new StringType($sMatch);
                     $sTable = $sTable->replace($sMatch, '_' . $sMatch->toLower());
                 }
             }
@@ -150,12 +150,12 @@ namespace Diana\Core\Persistence\Sql
          */
         protected function decodeTableName($sTableName)
         {
-            $sTable = $sTableName instanceof String ? $sTableName : new String($sTableName);
+            $sTable = $sTableName instanceof StringType ? $sTableName : new StringType($sTableName);
             $arMatches = array();
 
             if ($sTable->matches('/\_[a-z]/', $arMatches)) {
                 foreach ($arMatches[0] as $sMatch) {
-                    $sMatch = new String($sMatch);
+                    $sMatch = new StringType($sMatch);
                     $sMatchLetter = $sMatch->substring(1);
                     $sTable = $sTable->replace($sMatch, $sMatchLetter->toUpper());
                 }
@@ -215,7 +215,7 @@ namespace Diana\Core\Persistence\Sql
 
         protected function findTableFKComplex($sTableName)
         {
-            $sTableName = $sTableName instanceof String ? $sTableName : new String($sTableName);
+            $sTableName = $sTableName instanceof StringType ? $sTableName : new StringType($sTableName);
             $sTable = $this->encodeTableName($sTableName)->__toString();
             $sFound = '';
             // TODO: In allen Join Models nach einer Verbindung suchen => es ist ein join auf einen join
@@ -284,7 +284,7 @@ namespace Diana\Core\Persistence\Sql
 
         public function buildSelect(array $arCriteria = null)
         {
-            $this->sSelect = new String('SELECT');
+            $this->sSelect = new StringType('SELECT');
 
             $arOwnColumns = $this->arColumns;
 
@@ -292,9 +292,9 @@ namespace Diana\Core\Persistence\Sql
                 array_filled($arCriteria)
                 && array_key_exists('distinctField', $arCriteria)
             ) {
-                $sDistinctField = $arCriteria['distinctField'] instanceof String
+                $sDistinctField = $arCriteria['distinctField'] instanceof StringType
                                     ? $arCriteria['distinctField']
-                                    : new String($arCriteria['distinctField']);
+                                    : new StringType($arCriteria['distinctField']);
                 $arDistinctField = $sDistinctField->replace(SQL_ESC, '')->splitToStringsBy('.');
 
                 $arTestColumns = array_keys($arOwnColumns);
@@ -303,7 +303,7 @@ namespace Diana\Core\Persistence\Sql
                     $arDistinctField[0]->equals($this->sTableName)
                     && in_array($arDistinctField[1]->__toString(), $arTestColumns)
                 ) {
-                    $this->sSelect = new String($this->sSelect
+                    $this->sSelect = new StringType($this->sSelect
                                         . ' distinct '
                                         . $arCriteria['distinctField']
                                         . ' AS '
@@ -315,7 +315,7 @@ namespace Diana\Core\Persistence\Sql
                                         . ',');
                     unset($arOwnColumns[$arDistinctField[1]->__toString()]);
                 } elseif (in_array($arDistinctField[0], $this->arJoin)) {
-                    $this->sSelect = new String($this->sSelect
+                    $this->sSelect = new StringType($this->sSelect
                                         . ' distinct '
                                         . $arCriteria['distinctField']
                                         . ' AS '
@@ -333,14 +333,14 @@ namespace Diana\Core\Persistence\Sql
                 array_filled($arCriteria)
                 && array_key_exists('aggregate', $arCriteria)
             ) {
-                $sTableColumn = new String(array_keys($arCriteria['aggregate'])[0]);
+                $sTableColumn = new StringType(array_keys($arCriteria['aggregate'])[0]);
                 $sTableColumn = $sTableColumn->replace(SQL_ESC, '');
                 $arAggrColumn = $sTableColumn->splitToStringsBy('.');
                 $sColumn = $this->encodeTableName($arAggrColumn[count($arAggrColumn) - 1])
                                 ->__toString();
 
                 if (isset($this->arColumns[$sColumn])) {
-                    $this->sSelect = new String($this->sSelect . ' '
+                    $this->sSelect = new StringType($this->sSelect . ' '
                                         . $arCriteria['aggregate'][$sColumn]
                                         . '(' . $sColumn . ') AS '
                                         . SQL_ESC
@@ -353,13 +353,13 @@ namespace Diana\Core\Persistence\Sql
                     $this->arColumns[$sColumn] = 'int';
                     unset($arOwnColumns[$sColumn]);
                 } elseif (!isset($this->arColumns[$sColumn])) {
-                    $sTableColumn = new String(array_keys($arCriteria['aggregate'])[0]);
+                    $sTableColumn = new StringType(array_keys($arCriteria['aggregate'])[0]);
                     $sTableColumn = $sTableColumn->replace(SQL_ESC, '');
                     $arAggrColumn = $sTableColumn->splitToStringsBy('.');
                     $sColumn = $this->encodeTableName($arAggrColumn[count($arAggrColumn) - 1])
                                 ->__toString();
                     // if it is a * or something else, give the function also $sColumn value
-                    $this->sSelect = new String($this->sSelect . ' '
+                    $this->sSelect = new StringType($this->sSelect . ' '
                                         . $arCriteria['aggregate'][$sColumn]
                                         . '(' . $sColumn . ') AS '
                                         . SQL_ESC
@@ -377,8 +377,8 @@ namespace Diana\Core\Persistence\Sql
                 && array_key_exists('columns', $arCriteria)
             ) {
                 foreach ($arCriteria['columns'] as $sColumn) {
-                    $strColumn = $sColumn instanceof String ? $sColumn : new String($sColumn . '');
-                    $this->sSelect = new String($this->sSelect
+                    $strColumn = $sColumn instanceof StringType ? $sColumn : new StringType($sColumn . '');
+                    $this->sSelect = new StringType($this->sSelect
                                         . ' '
                                         . $strColumn
                                         . ' AS '
@@ -387,7 +387,7 @@ namespace Diana\Core\Persistence\Sql
                 }
             } else {
                 foreach ($arOwnColumns as $sColumnName => $sColumnType) {
-                    $this->sSelect = new String($this->sSelect
+                    $this->sSelect = new StringType($this->sSelect
                                         . ' '
                                         . SQL_ESC
                                         . $this->sTableName
@@ -417,7 +417,7 @@ namespace Diana\Core\Persistence\Sql
                         $arColumns = $obj->getColumns();
 
                         foreach ($arColumns as $sColumn => $sType) {
-                            $this->sSelect = new String($this->sSelect
+                            $this->sSelect = new StringType($this->sSelect
                                                 . ' '
                                                 . SQL_ESC
                                                 . $sFtablePrefix
@@ -452,7 +452,7 @@ namespace Diana\Core\Persistence\Sql
                                 continue;
                             }
 
-                            $this->sSelect = new String(
+                            $this->sSelect = new StringType(
                                                 $this->sSelect
                                                 . ' '
                                                 . SQL_ESC
@@ -475,7 +475,7 @@ namespace Diana\Core\Persistence\Sql
                 }
             }
 
-            $this->sSelect = new String($this->sSelect->substring(
+            $this->sSelect = new StringType($this->sSelect->substring(
                                     0,
                                     $this->sSelect->length - 1)
                                 . PHP_EOL
@@ -493,7 +493,7 @@ namespace Diana\Core\Persistence\Sql
 
             foreach ($this->arJoin as $sTableName) {
                 if (is_array($sTableName)) {
-                    $this->sJoin = new String($this->sJoin
+                    $this->sJoin = new StringType($this->sJoin
                                         . 'inner join '
                                         . SQL_ESC
                                         . $sTableName['ftable']
@@ -524,12 +524,12 @@ namespace Diana\Core\Persistence\Sql
                         // TODO: Wenn es kein eigener Key ist, auch Unterscheidung einbauen evtl.
                         $ar = $this->findTableFKComplex($sTableName);
                         foreach ($ar as $sKey => $sVal) {
-                            $sKey = new String($sKey);
+                            $sKey = new StringType($sKey);
                             $arKey = $sKey->splitToStringsBy('.');
-                            $sVal = new String($sVal);
+                            $sVal = new StringType($sVal);
                             $arVal = $sVal->splitToStringsBy('.');
 
-                            $this->sJoin = new String($this->sJoin
+                            $this->sJoin = new StringType($this->sJoin
                                             . 'inner join '
                                             . SQL_ESC
                                             . $sTableName
@@ -554,7 +554,7 @@ namespace Diana\Core\Persistence\Sql
                         }
                     } else {
                         if ($bIsOwnKey) {
-                            $this->sJoin = new String($this->sJoin
+                            $this->sJoin = new StringType($this->sJoin
                                             . 'inner join '
                                             . SQL_ESC
                                             . $sTableName
@@ -577,7 +577,7 @@ namespace Diana\Core\Persistence\Sql
                                             . SQL_ESC
                                             . PHP_EOL);
                         } else {
-                            $this->sJoin = new String($this->sJoin
+                            $this->sJoin = new StringType($this->sJoin
                                             . 'inner join '
                                             . SQL_ESC
                                             . $sTableName
@@ -607,7 +607,7 @@ namespace Diana\Core\Persistence\Sql
 
         public function buildWhere()
         {
-            $this->sWhere = new String(count($this->arWhere) > 0 ? 'WHERE ' : '');
+            $this->sWhere = new StringType(count($this->arWhere) > 0 ? 'WHERE ' : '');
 
             $arBindValues = array();
             foreach ($this->arWhere as $arActWhere) {
@@ -620,47 +620,47 @@ namespace Diana\Core\Persistence\Sql
                     $this->sWhere->length > 6
                     && $arCriteria[self::CRITERIA_CONDITION_CONNECTOR] === self::CRITERIA_AND
                 ) {
-                    $this->sWhere = new String($this->sWhere . PHP_EOL . self::CRITERIA_AND . ' ');
+                    $this->sWhere = new StringType($this->sWhere . PHP_EOL . self::CRITERIA_AND . ' ');
                 } elseif (
                     $this->sWhere->length > 6
                     && $arCriteria[self::CRITERIA_CONDITION_CONNECTOR] === self::CRITERIA_OR
                 ) {
-                    $this->sWhere = new String($this->sWhere . PHP_EOL . self::CRITERIA_OR . ' ');
+                    $this->sWhere = new StringType($this->sWhere . PHP_EOL . self::CRITERIA_OR . ' ');
                 }
 
                 // if nothing is set, guess that the programmer means AND connector
                 elseif ($this->sWhere->length > 6) {
-                    $this->sWhere = new String($this->sWhere . PHP_EOL . self::CRITERIA_AND . ' ');
+                    $this->sWhere = new StringType($this->sWhere . PHP_EOL . self::CRITERIA_AND . ' ');
                 }
 
                 switch ($arCriteria[self::CRITERIA_OPERATOR]) {
                     case self::CRITERIA_EQUALS:
-                        $this->sWhere = new String($this->sWhere . $sKey . ' = ' . '?');
+                        $this->sWhere = new StringType($this->sWhere . $sKey . ' = ' . '?');
                         $this->arBindValues[] = array($sKey => $sValue);
                         break;
 
                     case self::CRITERIA_LESSER_THAN:
-                        $this->sWhere = new String($this->sWhere . $sKey . ' < ' . '?');
+                        $this->sWhere = new StringType($this->sWhere . $sKey . ' < ' . '?');
                         $this->arBindValues[] = array($sKey => $sValue);
                         break;
 
                     case self::CRITERIA_LESSER_THAN_EQUALS:
-                        $this->sWhere = new String($this->sWhere . $sKey . ' <= ' . '?');
+                        $this->sWhere = new StringType($this->sWhere . $sKey . ' <= ' . '?');
                         $this->arBindValues[] = array($sKey => $sValue);
                         break;
 
                     case self::CRITERIA_GREATER_THAN:
-                        $this->sWhere = new String($this->sWhere . $sKey . ' > ' . '?');
+                        $this->sWhere = new StringType($this->sWhere . $sKey . ' > ' . '?');
                         $this->arBindValues[] = array($sKey => $sValue);
                         break;
 
                     case self::CRITERIA_GREATER_THAN_EQUALS:
-                        $this->sWhere = new String($this->sWhere . $sKey . ' >= ' . '?');
+                        $this->sWhere = new StringType($this->sWhere . $sKey . ' >= ' . '?');
                         $this->arBindValues[] = array($sKey => $sValue);
                         break;
 
                     case self::CRITERIA_LIKE:
-                        $this->sWhere = new String($this->sWhere
+                        $this->sWhere = new StringType($this->sWhere
                                             . $sKey
                                             . ' LIKE \''
                                             . $arCriteria[self::CRITERIA_VALUE]
@@ -668,42 +668,42 @@ namespace Diana\Core\Persistence\Sql
                         break;
 
                     case self::CRITERIA_IN:
-                        $this->sWhere = new String($this->sWhere
+                        $this->sWhere = new StringType($this->sWhere
                                             . $sKey
                                             . ' IN ('
                                             . $arCriteria[self::CRITERIA_VALUE]
                                             . ')');
                         break;
                     case self::CRITERIA_NOT_EQUALS:
-                        $this->sWhere = new String($this->sWhere
+                        $this->sWhere = new StringType($this->sWhere
                                             . $sKey
                                             . ' != '
                                             . $arCriteria[self::CRITERIA_VALUE]);
                         break;
                     case self::CRITERIA_IS_NOT_NULL:
-                        $this->sWhere = new String($this->sWhere . $sKey . ' IS NOT NULL');
+                        $this->sWhere = new StringType($this->sWhere . $sKey . ' IS NOT NULL');
                         break;
                     case self::CRITERIA_IS_NULL:
-                        $this->sWhere = new String($this->sWhere . $sKey . ' IS NULL');
+                        $this->sWhere = new StringType($this->sWhere . $sKey . ' IS NULL');
                         break;
                 }
             }
-            $this->sWhere = new String($this->sWhere . PHP_EOL);
+            $this->sWhere = new StringType($this->sWhere . PHP_EOL);
             $this->arWhere = array();
         }
 
         public function orderBy(
-                                String $sTableName,
-                                String $sColumName,
+                                StringType $sTableName,
+                                StringType $sColumName,
                                 $sOrientation = self::ORDER_ASC
                                 )
         {
-            if ($sOrientation instanceof String) {
+            if ($sOrientation instanceof StringType) {
                 $sOrientation = $sOrientation->__toString();
             }
 
             if ($this->sOrderBy === null) {
-                $this->sOrderBy = new String('ORDER BY '
+                $this->sOrderBy = new StringType('ORDER BY '
                                     . SQL_ESC
                                     . $this->encodeTableName($sTableName)
                                     . SQL_ESC
@@ -713,7 +713,7 @@ namespace Diana\Core\Persistence\Sql
                                     . SQL_ESC
                                     . ($sOrientation === self::ORDER_ASC ? ' ASC' : ' DESC'));
             } else {
-                $this->sOrderBy = new String($this->sOrderBy . ', '
+                $this->sOrderBy = new StringType($this->sOrderBy . ', '
                                     . SQL_ESC
                                     . $this->encodeTableName($sTableName)
                                     . SQL_ESC
@@ -730,24 +730,24 @@ namespace Diana\Core\Persistence\Sql
             $this->buildSelect($arCriteria);
             $this->buildJoin();
             $this->buildWhere();
-            $this->sSQL = new String($this->sSelect
+            $this->sSQL = new StringType($this->sSelect
                             . $this->sJoin
                             . $this->sWhere
                             . $this->sOrderBy);
-            $this->sSQL = new String($this->sSQL->rTrim()->__toString());
+            $this->sSQL = new StringType($this->sSQL->rTrim()->__toString());
 
             // usual case: no limit is set and semicolon at the end of the query is missing
             if (
                 !$this->sSQL->endsWith(';')
                 && !isset($arCriteria['limit'])
             ) {
-                $this->sSQL = new String($this->sSQL . ';');
+                $this->sSQL = new StringType($this->sSQL . ';');
             } elseif (
                 !$this->sSQL->endsWith(';')
                 && isset($arCriteria['limit'])
                 && $arCriteria['limit'] > -1
             ) {
-                $this->sSQL = new String($this->sSQL
+                $this->sSQL = new StringType($this->sSQL
                                 . PHP_EOL
                                 . 'LIMIT '
                                 . $arCriteria['limit']
@@ -757,7 +757,7 @@ namespace Diana\Core\Persistence\Sql
                 && isset($arCriteria['limit'])
                 && $arCriteria['limit'] > -1
             ) {
-                $this->sSQL = new String($this->sSQL->substring(0, $this->sSQL->length - 1)
+                $this->sSQL = new StringType($this->sSQL->substring(0, $this->sSQL->length - 1)
                                 . PHP_EOL
                                 . 'LIMIT '
                                 . $iLimit
@@ -765,7 +765,7 @@ namespace Diana\Core\Persistence\Sql
             }
         }
 
-        public function parseColumn(String $sName, $sColumnValue, String $sType)
+        public function parseColumn(StringType $sName, $sColumnValue, StringType $sType)
         {
             $sMethod = 'set' . $this->decodeTableName($sName);
             $sType = $sType->toLower();
@@ -777,7 +777,7 @@ namespace Diana\Core\Persistence\Sql
             ) {
                 $this->$sMethod($sColumnValue);
                 $sColumnValue = $sColumnValue->getId();
-                $sType = new String('int');
+                $sType = new StringType('int');
             }
 
             $sType = $sType->__toString();
@@ -785,7 +785,7 @@ namespace Diana\Core\Persistence\Sql
             switch ($sType) {
                 case 'string':
                     $sColumnValue = empty($sColumnValue) ? '' : $sColumnValue;
-                    $str = new String($sColumnValue);
+                    $str = new StringType($sColumnValue);
                     $this->$sMethod($str);
                 break;
                 case 'float':
@@ -838,7 +838,7 @@ namespace Diana\Core\Persistence\Sql
                 $arKeys = array_keys($arBind);
                 $sName = $arKeys[0];
                 $sValue = $arBind[$sName];
-                $sNameEsc = new String($sName);
+                $sNameEsc = new StringType($sName);
                 $sNameEsc = $sNameEsc->replace(SQL_ESC, '');
                 $arTableColumnPair = $sNameEsc->splitToStringsBy('.');
 
@@ -847,7 +847,7 @@ namespace Diana\Core\Persistence\Sql
                     if (!$arTableColumnPair[0]->equals($this->sTableName)) {
                         $bFound = false;
                         foreach ($this->arJoin as $sJoin) {
-                            $sTable = new String($sJoin . '');
+                            $sTable = new StringType($sJoin . '');
                             if ($sTable->equals($arTableColumnPair[0])) {
                                 $sModel = "App\\Mvc\\Model\\"
                                             . $this->decodeTableName($sTable)->__toString()
@@ -869,7 +869,7 @@ namespace Diana\Core\Persistence\Sql
                                     $bFound = true;
                                     $mdl = new $sModel();
                                     $arColumns = $mdl->getColumns();
-                                    $sType = new String($arColumns[$sName]);
+                                    $sType = new StringType($arColumns[$sName]);
                                     $sType = $sType->toLower();
                                     // TODO: Woher aus gejointen Tabellen den Value beziehen???
                                 }
@@ -900,7 +900,7 @@ namespace Diana\Core\Persistence\Sql
                                 $this->arColumnData)
                         ) {
                             $sValue = $this->arColumnData[$arTableColumnPair[1]->__toString()];
-                            $sType = new String(
+                            $sType = new StringType(
                                         $this->arColumns[$arTableColumnPair[1]
                                             ->__toString()]
                                     );
@@ -909,13 +909,13 @@ namespace Diana\Core\Persistence\Sql
 
                         // its only in where clause, but no columnData is set.
                         elseif (array_key_exists($sName, $this->arColumns)) {
-                            $sType = new String($this->arColumns[$sName]);
+                            $sType = new StringType($this->arColumns[$sName]);
                             $sType = $sType->toLower();
                         }
 
                         // in any other case
                         else {
-                            $sType = new String(gettype($sValue));
+                            $sType = new StringType(gettype($sValue));
                             $sType = $sType->toLower();
                         }
                     }
@@ -925,7 +925,7 @@ namespace Diana\Core\Persistence\Sql
                         array_key_exists($sName, $this->arColumns)
                         && isset($sName, $this->arColumns)
                     ) {
-                        $sType = new String($this->arColumns[$sName]);
+                        $sType = new StringType($this->arColumns[$sName]);
                     }
 
                     // case 2: its a key column
@@ -933,12 +933,12 @@ namespace Diana\Core\Persistence\Sql
                         array_key_exists($sName, $this->arKeys)
                         && isset($sName, $this->arKeys)
                     ) {
-                        $sType = new String('int');
+                        $sType = new StringType('int');
                     }
 
                     // case 3: a non-existing column, nothing to do!
                     else {
-                        $sType = new String('undefined');
+                        $sType = new StringType('undefined');
                         // not neccessary, but nice code style!
                         continue;
                     }
@@ -946,14 +946,14 @@ namespace Diana\Core\Persistence\Sql
                     $sType = $sType->toLower();
                 }
 
-                $sReturnedType = $sValue instanceof String
-                                    ? new String('string')
-                                    : new String(gettype($sType));
+                $sReturnedType = $sValue instanceof StringType
+                                    ? new StringType('string')
+                                    : new StringType(gettype($sType));
                 $sReturnedType = $sReturnedType->toLower();
 
                 if (
                     $sType->equals('string')
-                    && !$sValue instanceof String
+                    && !$sValue instanceof StringType
                 ) {
                     throw new \Exception('Not the datatype as expected for '
                         . $sName
@@ -990,7 +990,7 @@ namespace Diana\Core\Persistence\Sql
                     $sReturnedType->contains($sType)
                     || $sReturnedType->equals($sType)
                 ) {
-                    $sFixType = new String(gettype($sValue));
+                    $sFixType = new StringType(gettype($sValue));
                     $sFixType = $sFixType->toLower();
 
                     if ($sFixType->contains($sType) || $sFixType->equals($sType)) {
@@ -1056,12 +1056,12 @@ namespace Diana\Core\Persistence\Sql
         public function bindInsertValues()
         {
             $this->arBindValues = array();
-            $this->sSQL = new String('insert into '
+            $this->sSQL = new StringType('insert into '
                             . SQL_ESC
                             . $this->encodeTableName($this->sTableName)
                             . SQL_ESC . ' ');
-            $sParams = new String('(');
-            $sValues = new String('(');
+            $sParams = new StringType('(');
+            $sValues = new StringType('(');
 
             foreach ($this->arColumnData as $sColumnName => $colValue) {
                 // non-key columns
@@ -1071,7 +1071,7 @@ namespace Diana\Core\Persistence\Sql
                 ) {
                     if (
                         $colValue !== null
-                        && $colValue instanceof String
+                        && $colValue instanceof StringType
                         && !$colValue->isEmpty()
                     ) {
                         $this->arBindValues[] = array(
@@ -1083,14 +1083,14 @@ namespace Diana\Core\Persistence\Sql
                                                 . $sColumnName
                                                 . SQL_ESC => $colValue
                                                 );
-                        $sParams = new String($sParams
+                        $sParams = new StringType($sParams
                                     . SQL_ESC
                                     . $sColumnName
                                     . SQL_ESC
                                     . ', ');
-                        $sValues = new String($sValues . '?, ');
+                        $sValues = new StringType($sValues . '?, ');
                     } elseif (
-                        !$colValue instanceof String
+                        !$colValue instanceof StringType
                         && isset($colValue)
                     ) {
                         $this->arBindValues[] = array(
@@ -1102,12 +1102,12 @@ namespace Diana\Core\Persistence\Sql
                                                     . $sColumnName
                                                     . SQL_ESC => $colValue
                                                 );
-                        $sParams = new String($sParams
+                        $sParams = new StringType($sParams
                                     . SQL_ESC
                                     . $sColumnName
                                     . SQL_ESC
                                     . ', ');
-                        $sValues = new String($sValues . '?, ');
+                        $sValues = new StringType($sValues . '?, ');
                     }
                 }
 
@@ -1125,13 +1125,13 @@ namespace Diana\Core\Persistence\Sql
                                                 . $sColumnName
                                                 . SQL_ESC => $colValue
                                             );
-                    $sParams = new String($sParams . SQL_ESC . $sColumnName . SQL_ESC . ', ');
-                    $sValues = new String($sValues . '?, ');
+                    $sParams = new StringType($sParams . SQL_ESC . $sColumnName . SQL_ESC . ', ');
+                    $sValues = new StringType($sValues . '?, ');
                 }
             }
-            $sParams = new String($sParams->substring(0, $sParams->length - 2) . ')');
-            $sValues = new String($sValues->substring(0, $sValues->length - 2) . ')');
-            $this->sSQL = new String($this->sSQL . $sParams . ' values ' . $sValues);
+            $sParams = new StringType($sParams->substring(0, $sParams->length - 2) . ')');
+            $sValues = new StringType($sValues->substring(0, $sValues->length - 2) . ')');
+            $this->sSQL = new StringType($this->sSQL . $sParams . ' values ' . $sValues);
             $pdo = $this->db->getPdo();
             $stmt = $pdo->prepare($this->sSQL->__toString());
 
@@ -1153,12 +1153,12 @@ namespace Diana\Core\Persistence\Sql
         public function bindUpdateValues()
         {
             $this->arBindValues = array();
-            $this->sSQL = new String('update '
+            $this->sSQL = new StringType('update '
                             . SQL_ESC
                             . $this->encodeTableName($this->sTableName)
                             . SQL_ESC
                             . PHP_EOL);
-            $sValues = new String('SET ');
+            $sValues = new StringType('SET ');
 
             foreach ($this->arColumns as $sColumnName => $sType) {
                 if ($sColumnName === 'id') {
@@ -1169,7 +1169,7 @@ namespace Diana\Core\Persistence\Sql
                     $columnData = $this->arColumnData[$sColumnName];
                     if (
                         $columnData !== null
-                        && $columnData instanceof String
+                        && $columnData instanceof StringType
                         && !$columnData->isEmpty()
                     ) {
                         $this->arBindValues[] = array(
@@ -1181,15 +1181,15 @@ namespace Diana\Core\Persistence\Sql
                                                     . $sColumnName
                                                     . SQL_ESC => $columnData
                                                 );
-                        $sValues = new String($sValues
+                        $sValues = new StringType($sValues
                                     . SQL_ESC
                                     . $sColumnName
                                     . SQL_ESC
                                     . ' = ?, ');
                     } elseif (
-                        !$columnData instanceof String
+                        !$columnData instanceof StringType
                         && !empty($columnData)
-                        || !$columnData instanceof String
+                        || !$columnData instanceof StringType
                         && is_bool($columnData)
                     ) {
                         $this->arBindValues[] = array(
@@ -1201,7 +1201,7 @@ namespace Diana\Core\Persistence\Sql
                                                     . $sColumnName
                                                     . SQL_ESC => $columnData
                                                 );
-                        $sValues = new String($sValues
+                        $sValues = new StringType($sValues
                                     . SQL_ESC
                                     . $sColumnName
                                     . SQL_ESC
@@ -1210,7 +1210,7 @@ namespace Diana\Core\Persistence\Sql
                 }
             }
 
-            $this->sSQL = new String($this->sSQL
+            $this->sSQL = new StringType($this->sSQL
                             . $sValues->substring(0, $sValues->length - 2)
                             . PHP_EOL
                             . 'WHERE '
@@ -1320,7 +1320,7 @@ namespace Diana\Core\Persistence\Sql
             $arForeignColumns = array();
             foreach ($arRow as $sKey => $sValue) {
                 if ($sValue !== null) {
-                    $strKey = new String($sKey);
+                    $strKey = new StringType($sKey);
                     $arSplit = $strKey->splitToStringsBy('.');
                     $sTestTable = $arSplit[0];
                     $sColumnKey = $arSplit[1];
@@ -1331,20 +1331,20 @@ namespace Diana\Core\Persistence\Sql
                                            $sValue,
                                            array_key_exists($sColumnKey->__toString(),
                                                 $this->arColumns)
-                                            ? new String($this
+                                            ? new StringType($this
                                                 ->arColumns[$sColumnKey
                                                     ->__toString()])
-                                            : new String('int'));
+                                            : new StringType('int'));
                     } elseif ($sTestTable->matches('/table[0-9]+/')) {
                         $iCounter = 0;
                         $iSearched = (int)$sTestTable->substring(5)->__toString();
 
                         foreach ($this->arJoin as $arTable) {
                             if (is_array($arTable)) {
-                                $sFTable = $arTable['ftable'] instanceof String
+                                $sFTable = $arTable['ftable'] instanceof StringType
                                                 ? $arTable['ftable']->__toString()
                                                 : $arTable['ftable'];
-                                $sOKey = $arTable['okey'] instanceof String
+                                $sOKey = $arTable['okey'] instanceof StringType
                                             ? $arTable['okey']->__toString()
                                             : $arTable['okey'];
 
@@ -1355,7 +1355,7 @@ namespace Diana\Core\Persistence\Sql
                                     $this->arObjects[$sOKey]
                                         ->parseColumn($this->decodeTableName($sColumnKey),
                                                       $sValue,
-                                                      new String(
+                                                      new StringType(
                                                         $this->arObjects[$sOKey]
                                                             ->getColumns()[$sColumnKey->__toString()]
                                                       )
@@ -1373,7 +1373,7 @@ namespace Diana\Core\Persistence\Sql
                                     $mdl->parseColumn(
                                             $this->decodeTableName($sColumnKey),
                                             $sValue,
-                                            new String(
+                                            new StringType(
                                                 $mdl->getColumns()[$this
                                                                    ->encodeTableName($sColumnKey)
                                                                    ->__toString()]
@@ -1405,19 +1405,19 @@ namespace Diana\Core\Persistence\Sql
                                 array_key_exists(
                                     $sColumnKey->__toString(),
                                     $arForeignColumns[$sKeyName])
-                                        ? new String(
+                                        ? new StringType(
                                             $arForeignColumns[$sKeyName][$sColumnKey->__toString()]
                                         )
-                                        : new String('int')
+                                        : new StringType('int')
                             );
                     }
                 }
             }
         }
 
-        public function aggregateCount(String $sColumnName)
+        public function aggregateCount(StringType $sColumnName)
         {
-            $this->sSelect = new String('SELECT count('
+            $this->sSelect = new StringType('SELECT count('
                                 . SQL_ESC
                                 . $this->encodeTableName($sColumnName)
                                 . SQL_ESC
@@ -1469,7 +1469,7 @@ namespace Diana\Core\Persistence\Sql
             }
 
             $this->buildWhere();
-            $this->sSQL = new String($this->sSelect . $this->sWhere->trim() . ';');
+            $this->sSQL = new StringType($this->sSelect . $this->sWhere->trim() . ';');
             $pdo = $this->db->getPdo();
             $stmt = $pdo->prepare($this->sSQL->__toString());
             $this->bindValues($stmt);
@@ -1594,7 +1594,7 @@ namespace Diana\Core\Persistence\Sql
             $arParseModels = array();
             $arForeignColumns = array();
             foreach ($arRow as $sKey => $sValue) {
-                $strKey = new String($sKey);
+                $strKey = new StringType($sKey);
                 $arSplit = $strKey->splitToStringsBy('.');
                 $sTestTable = $arSplit[0];
                 $sColumnKey = $arSplit[1];
@@ -1604,18 +1604,18 @@ namespace Diana\Core\Persistence\Sql
                     $this->parseColumn($sColumnKey,
                         $sValue,
                         array_key_exists($sColumnKey->__toString(), $this->arColumns)
-                            ? new String($this->arColumns[$sColumnKey->__toString()])
-                            : new String('int'));
+                            ? new StringType($this->arColumns[$sColumnKey->__toString()])
+                            : new StringType('int'));
                 } elseif ($sTestTable->matches('/table[0-9]+/')) {
                     $iCounter = 0;
                     $iSearched = (int)$sTestTable->substring(5)->__toString();
 
                     foreach ($this->arJoin as $arTable) {
                         if (is_array($arTable)) {
-                            $sFTable = $arTable['ftable'] instanceof String
+                            $sFTable = $arTable['ftable'] instanceof StringType
                                             ? $arTable['ftable']->__toString()
                                             : $arTable['ftable'];
-                            $sOKey = $arTable['okey'] instanceof String
+                            $sOKey = $arTable['okey'] instanceof StringType
                                         ? $arTable['okey']->__toString()
                                         : $arTable['okey'];
 
@@ -1626,7 +1626,7 @@ namespace Diana\Core\Persistence\Sql
                                 $this->arObjects[$sOKey]
                                     ->parseColumn($this->decodeTableName($sColumnKey),
                                         $sValue,
-                                        new String($this->arObjects[$sOKey]
+                                        new StringType($this->arObjects[$sOKey]
                                             ->getColumns()[$sColumnKey->__toString()]));
                                 break;
                             } elseif ($iCounter === $iSearched
@@ -1639,7 +1639,7 @@ namespace Diana\Core\Persistence\Sql
                                 $mdl->parseColumn(
                                     $this->decodeTableName($sColumnKey),
                                     $sValue,
-                                    new String($mdl
+                                    new StringType($mdl
                                         ->getColumns()[$this
                                             ->encodeTableName($sColumnKey)->__toString()])
                                 );
@@ -1669,9 +1669,9 @@ namespace Diana\Core\Persistence\Sql
                             array_key_exists(
                                 $sColumnKey->__toString(),
                                 $arForeignColumns[$sKeyName])
-                                    ? new String($arForeignColumns[$sKeyName][$sColumnKey
+                                    ? new StringType($arForeignColumns[$sKeyName][$sColumnKey
                                         ->__toString()])
-                                    : new String('int')
+                                    : new StringType('int')
                     );
                 }
             }
@@ -1744,9 +1744,9 @@ namespace Diana\Core\Persistence\Sql
                     ) {
                         $mdlObj
                             ->parseColumn(
-                                new String($sColumnName),
+                                new StringType($sColumnName),
                                 $result[$sKey],
-                                new String($sDataType)
+                                new StringType($sDataType)
                         );
                     }
                 }
@@ -1767,7 +1767,7 @@ namespace Diana\Core\Persistence\Sql
                             $mdl->parseColumn(
                                 $this->decodeTableName($sColumn),
                                 $result['table' . $iCounter . '.' . $sColumn],
-                                new String($sType)
+                                new StringType($sType)
                             );
                         }
 
@@ -1789,9 +1789,9 @@ namespace Diana\Core\Persistence\Sql
                                     && $result[$sKey] !== '')
                             ) {
                                 $obj->parseColumn(
-                                    new String($sColumn),
+                                    new StringType($sColumn),
                                     $result[$sKey],
-                                    new String($sType)
+                                    new StringType($sType)
                                 );
                             }
                         }
@@ -1828,7 +1828,7 @@ namespace Diana\Core\Persistence\Sql
                                     )
                                 );
                 $this->buildWhere();
-                $this->sSQL = new String('DELETE'
+                $this->sSQL = new StringType('DELETE'
                                 . PHP_EOL
                                 . 'FROM '
                                 . SQL_ESC
@@ -1854,7 +1854,7 @@ namespace Diana\Core\Persistence\Sql
                 }
 
                 $this->buildWhere();
-                $this->sSQL = new String('DELETE'
+                $this->sSQL = new StringType('DELETE'
                                 . PHP_EOL
                                 . 'FROM '
                                 . SQL_ESC
@@ -1905,12 +1905,12 @@ namespace Diana\Core\Persistence\Sql
             }
 
             $this->buildWhere();
-            $this->sSQL = new String('DELETE FROM '
+            $this->sSQL = new StringType('DELETE FROM '
                             . $this->encodeTableName($this->getTableName())
                             . PHP_EOL
                             . $this->sWhere->trim()
                             . ';');
-            $this->sSQL = new String($this->sSQL->substring(0, $this->sSQL->length - 5) . ';');
+            $this->sSQL = new StringType($this->sSQL->substring(0, $this->sSQL->length - 5) . ';');
             $pdo = $this->db->getPdo();
             $stmt = $pdo->prepare($this->sSQL);
             $this->bindValues($stmt);
@@ -2006,7 +2006,7 @@ namespace Diana\Core\Persistence\Sql
 
         public function __call($sName, $argv)
         {
-            $sName = new String($sName);
+            $sName = new StringType($sName);
 
             if ($sName->toLower()->startsWith('join')) {
                 $sJoinTable = $sName->substring(4);
@@ -2032,7 +2032,7 @@ namespace Diana\Core\Persistence\Sql
                 // more than one foreign key that references to the same foreign table
                 if (
                     isset($argv[0])
-                    && $argv[0] instanceof String
+                    && $argv[0] instanceof StringType
                     && $argv[0]->toLower()->equals('model')
                 ) {
                     return $this->arObjects[$sColumn->__toString()];
@@ -2090,7 +2090,7 @@ namespace Diana\Core\Persistence\Sql
                     $value = (int)$argv[0];
                     $this->arColumnData[$sArKey] = $value;
                 } elseif (is_string($argv[0])) {
-                    $value = new String($argv[0]);
+                    $value = new StringType($argv[0]);
                     $this->arColumnData[$sArKey] = $value;
                 } elseif (is_double($argv[0])) {
                     $value = (double)$argv[0];
@@ -2098,7 +2098,7 @@ namespace Diana\Core\Persistence\Sql
                 } elseif (is_bool($argv[0])) {
                     $value = (boolean)$argv[0];
                     $this->arColumnData[$sArKey] = $value;
-                } elseif ($argv[0] instanceof String) {
+                } elseif ($argv[0] instanceof StringType) {
                     $value = $argv[0];
                     $this->arColumnData[$sArKey] = $value;
                 } elseif ($argv[0] instanceof BaseModel) {

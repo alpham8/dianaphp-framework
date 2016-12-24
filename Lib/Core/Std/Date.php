@@ -14,7 +14,7 @@
  */
 namespace Diana\Core\Std
 {
-    use Diana\Core\Std\String;
+    use Diana\Core\Std\StringType;
 
     class Date extends \DateTime
     {
@@ -31,7 +31,7 @@ namespace Diana\Core\Std
 
         public function toSqlDate()
         {
-            return new String($this->format('Y-m-d H:i:s'));
+            return new StringType($this->format('Y-m-d H:i:s'));
         }
     }
 }

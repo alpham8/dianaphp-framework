@@ -1,14 +1,13 @@
 <?php
 /**
- * String.php
+ * StringType.php
  *
  * This is my implementation of String class for PHP. It has all common features,
  * which are well-known from other OOP languages (like C# or Java)
  *
- * @package De.Twunner.Std
+ * @package Diana.Core.Std
  * @version v0.0.1
- * @author Thomas Wunner <th.wunner@gmx.de>
- * @copyright CC by SA Copyrith (c) 2014, Thomas Wunner
+ * @author Thomas Wunner <info@wunner-software.de>
  *
  *
  * @since API v0.0.1
@@ -18,20 +17,20 @@ namespace Diana\Core\Std
     use Diana\Core\Util\ExceptionView;
 
     // TODO: mb_http_output einbauen fuer JSON response
-    class String
+    class StringType
     {
         private $strCurrent;
         private $bMb;
         public $length;
 
-        private static function _typeError($strMsg)
+        private static function typeError($strMsg)
         {
             throw new \Exception('Type Error! ' . $strMsg);
         }
 
         public function __construct($strCurrent = '')
         {
-            if ($strCurrent instanceof String) {
+            if ($strCurrent instanceof StringType) {
                 $strCurrent = $strCurrent->__toString();
             } elseif (!is_string($strCurrent)) {
                 self::typeError(
@@ -57,7 +56,7 @@ namespace Diana\Core\Std
         public function startsWith($strPartToCheck)
         {
             if (!is_string($strPartToCheck)
-                && $strPartToCheck instanceof String
+                && $strPartToCheck instanceof StringType
             ) {
                 $strPartToCheck = $strPartToCheck->__toString();
             } elseif (!is_string($strPartToCheck)) {
@@ -125,7 +124,7 @@ namespace Diana\Core\Std
         {
             if (
                 !is_string($strPartToCheck)
-                && $strPartToCheck instanceof String
+                && $strPartToCheck instanceof StringType
             ) {
                 $strPartToCheck = $strPartToCheck->__toString();
             } elseif (!is_string($strPartToCheck)) {
@@ -202,17 +201,17 @@ namespace Diana\Core\Std
         public function matches($strRegexPattern, &$arMatches = null)
         {
             if ($this->bMb) {
-                $strRegexPattern = $strRegexPattern instanceof String
+                $strRegexPattern = $strRegexPattern instanceof StringType
                                         ? $strRegexPattern
-                                        : new String($strRegexPattern);
+                                        : new StringType($strRegexPattern);
 
                 if ($strRegexPattern->startsWith('/')) {
                     $iLastSlash = $strRegexPattern->lastIndexOf('/') + 1;
                     $modifiers = $strRegexPattern->substring($iLastSlash);
                     $modifiers = $modifiers->contains('u')
                                     ? $modifiers
-                                    : new String($modifiers . 'u');
-                    $strRegexPattern = new String(
+                                    : new StringType($modifiers . 'u');
+                    $strRegexPattern = new StringType(
                                         $strRegexPattern
                                             ->substring(
                                                 0,
@@ -221,7 +220,7 @@ namespace Diana\Core\Std
                                         . $modifiers
                                         );
                 } else {
-                    $strRegexPattern = new String('/' . $strRegexPattern . '/u');
+                    $strRegexPattern = new StringType('/' . $strRegexPattern . '/u');
                 }
 
                 if ($arMatches === null) {
@@ -269,13 +268,13 @@ namespace Diana\Core\Std
                 $iSubstrLen = $iEnd - $iStart;
 
                 return $this->bMb
-                            ? new String(
+                            ? new StringType(
                                 mb_substr(
                                     $this->strCurrent,
                                     $iStart,
                                     $iSubstrLen
                                 )
-                            ) : new String(
+                            ) : new StringType(
                                 substr(
                                     $this->strCurrent,
                                     $iStart,
@@ -284,12 +283,12 @@ namespace Diana\Core\Std
                             );
             } else {
                 return $this->bMb
-                    ? new String(
+                    ? new StringType(
                         mb_substr(
                             $this->strCurrent,
                             $iStart
                         )
-                    ) : new String(
+                    ) : new StringType(
                             substr(
                                 $this->strCurrent,
                                 $iStart
@@ -305,28 +304,28 @@ namespace Diana\Core\Std
          */
         public function trim()
         {
-            return new String(trim($this->strCurrent));
+            return new StringType(trim($this->strCurrent));
         }
 
         public function lTrim()
         {
-            return new String(ltrim($this->strCurrent));
+            return new StringType(ltrim($this->strCurrent));
         }
 
         public function rTrim()
         {
-            return new String(rtrim($this->strCurrent));
+            return new StringType(rtrim($this->strCurrent));
         }
 
         public function ucFirst()
         {
-            return new String(ucfirst($this->strCurrent));
+            return new StringType(ucfirst($this->strCurrent));
         }
 
         public function lcFirst()
         {
             if ($this->bMb) {
-                return new String(
+                return new StringType(
                     mb_strtoupper(
                         mb_substr(
                             $this->strCurrent,
@@ -340,13 +339,13 @@ namespace Diana\Core\Std
                     )
                 );
             } else {
-                return new String(lcfirst($this->strCurrent));
+                return new StringType(lcfirst($this->strCurrent));
             }
         }
 
         public function toLower()
         {
-            return new String(
+            return new StringType(
                 $this->bMb
                     ? mb_strtolower($this->strCurrent)
                     : strtolower($this->strCurrent)
@@ -355,7 +354,7 @@ namespace Diana\Core\Std
 
         public function toUpper()
         {
-            return new String(
+            return new StringType(
                 $this->bMb
                     ? mb_strtoupper($this->strCurrent)
                     : strtoupper($this->strCurrent)
@@ -389,7 +388,7 @@ namespace Diana\Core\Std
 
         public function indexOf($sSearchTo)
         {
-            if ($sSearchTo instanceof String) {
+            if ($sSearchTo instanceof StringType) {
                 $sSearchTo = $sSearchTo->__toString();
             }
 
@@ -413,7 +412,7 @@ namespace Diana\Core\Std
 
         public function lastIndexOf($sSearchTo)
         {
-            if ($sSearchTo instanceof String) {
+            if ($sSearchTo instanceof StringType) {
                 $sSearchTo = $sSearchTo->__toString();
             }
 
@@ -437,12 +436,12 @@ namespace Diana\Core\Std
 
         public function arrayToString($charArray, $strGlue = '')
         {
-            return new String(implode($strGlue, $charArray));
+            return new StringType(implode($strGlue, $charArray));
         }
 
         public function splitBy($str, $iLimit = -1)
         {
-            $str instanceof String ? $str->__toString() : $str;
+            $str instanceof StringType ? $str->__toString() : $str;
 
             if ($iLimit > -1) {
                 return $this->bMb
@@ -471,11 +470,11 @@ namespace Diana\Core\Std
 
         public function splitToStringsBy($str, $iLimit = -1)
         {
-            $str instanceof String ? $str->__toString() : $str;
+            $str instanceof StringType ? $str->__toString() : $str;
 
             $arRet = $this->splitBy($str, $iLimit);
             foreach ($arRet as $iIndex => $strCurrent) {
-                $arRet[$iIndex] = new String($strCurrent);
+                $arRet[$iIndex] = new StringType($strCurrent);
             }
 
             return $arRet;
@@ -483,28 +482,28 @@ namespace Diana\Core\Std
 
         public function replace($strSearch, $strReplace)
         {
-            $strSearch = $strSearch instanceof String ? $strSearch->__toString() : $strSearch;
-            $strReplace = $strReplace instanceof String ? $strReplace->__toString() : $strReplace;
+            $strSearch = $strSearch instanceof StringType ? $strSearch->__toString() : $strSearch;
+            $strReplace = $strReplace instanceof StringType ? $strReplace->__toString() : $strReplace;
 
-            return new String(str_replace($strSearch, $strReplace, $this->strCurrent));
+            return new StringType(str_replace($strSearch, $strReplace, $this->strCurrent));
         }
 
         public function regReplace($strPattern, $strReplace)
         {
-            $strReplace instanceof String ? $strReplace->__toString() : $strReplace;
+            $strReplace instanceof StringType ? $strReplace->__toString() : $strReplace;
 
             if ($this->bMb) {
                 $sEncoding = mb_detect_encoding($this->strCurrent);
                 $strPattern = $this->sanitizeMbRegex($strPattern);
 
-                return new String(
+                return new StringType(
                     mb_ereg_replace(
                         $strPattern,
                         mb_convert_encoding($strReplace, $sEncoding),
                         $this->strCurrent)
                 );
             } else {
-                return new String(preg_replace($strPattern, $strReplace, $this->strCurrent));
+                return new StringType(preg_replace($strPattern, $strReplace, $this->strCurrent));
             }
         }
 
@@ -523,7 +522,7 @@ namespace Diana\Core\Std
                 }
                 $strBase .= $this->strCurrent;
             }
-            return new String($strBase);
+            return new StringType($strBase);
         }
 
         public function padLeft($iSpaces, $bHtml = false)
@@ -542,12 +541,12 @@ namespace Diana\Core\Std
                 $strBase .= $this->strCurrent;
             }
 
-            return new String($strBase);
+            return new StringType($strBase);
         }
 
         public function contains($strNeedle)
         {
-            $strNeedle = $strNeedle instanceof String ? $strNeedle->__toString() : $strNeedle;
+            $strNeedle = $strNeedle instanceof StringType ? $strNeedle->__toString() : $strNeedle;
 
             if ($this->bMb) {
                 $sEncoding = mb_detect_encoding($this->strCurrent);
@@ -566,7 +565,7 @@ namespace Diana\Core\Std
 
         public function compareTo($strToCompare)
         {
-            $strToCompare = $strToCompare instanceof String
+            $strToCompare = $strToCompare instanceof StringType
                                 ? $strToCompare->__toString()
                                 : $strToCompare;
 
@@ -575,7 +574,7 @@ namespace Diana\Core\Std
 
         public function equals($sEqualTo)
         {
-            if ($sEqualTo instanceof String) {
+            if ($sEqualTo instanceof StringType) {
                 $sEqualTo = $sEqualTo->__toString();
             }
 
@@ -584,12 +583,12 @@ namespace Diana\Core\Std
 
         protected function sanitizeMbRegex($strRegexPattern)
         {
-            $strRegexPattern = $strRegexPattern instanceof String
+            $strRegexPattern = $strRegexPattern instanceof StringType
                                     ? $strRegexPattern
-                                    : new String($strRegexPattern);
+                                    : new StringType($strRegexPattern);
             $sEncoding = mb_detect_encoding($this->strCurrent);
             mb_regex_encoding($sEncoding);
-            $strRegexPattern = new String(
+            $strRegexPattern = new StringType(
                                 mb_convert_encoding(
                                     $strRegexPattern->__toString(),
                                     $sEncoding

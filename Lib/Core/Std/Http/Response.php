@@ -1,7 +1,7 @@
 <?php
 namespace Diana\Core\Std\Http
 {
-    use Diana\Core\Std\String;
+    use Diana\Core\Std\StringType;
 
     class Response
     {
@@ -137,7 +137,7 @@ namespace Diana\Core\Std\Http
         protected $iStatusCode;
         protected $sReasonPhrase;
 
-        public function setDatatype(String $sType)
+        public function setDatatype(StringType $sType)
         {
             $this->sDatatype = $sType->__toString();
 
@@ -150,7 +150,7 @@ namespace Diana\Core\Std\Http
 
         public function getDatatype()
         {
-            return new String($this->sDatatype);
+            return new StringType($this->sDatatype);
         }
 
         /**
@@ -273,7 +273,7 @@ namespace Diana\Core\Std\Http
 
         public function sendJson(array $arHeader, $sBody)
         {
-            if ($sBody instanceof String) {
+            if ($sBody instanceof StringType) {
                 $sBody = $sBody->__toString();
             }
 
@@ -281,7 +281,7 @@ namespace Diana\Core\Std\Http
                 $arHeader[$sKey] = $arHeader[$sKey]->__toString();
             }
 
-            $this->setDatatype(new String('json'));
+            $this->setDatatype(new StringType('json'));
             $arResponse = array(
                             'header' => $arHeader,
                             'body' => $sBody

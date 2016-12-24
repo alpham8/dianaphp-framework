@@ -1,7 +1,7 @@
 <?php
 namespace App\Src
 {
-    use Diana\Core\Std\String;
+    use Diana\Core\Std\StringType;
     use Diana\Core\Persistence\Sql\BaseModel;
     use Diana\Core\Mvc\View;
 
@@ -26,8 +26,8 @@ namespace App\Src
                                     &$arDataModels,
                                     $iDsPerPage,
                                     View $view,
-                                    String $sController,
-                                    String $sAction,
+                                    StringType $sController,
+                                    StringType $sAction,
                                     array $arAdditionalParams = null
                                     )
         {
@@ -62,7 +62,7 @@ namespace App\Src
 
             $this->arAllIdsMdl = $mdl->fetchAll(array(
                 'columns' => array(
-                    new String(SQL_ESC
+                    new StringType(SQL_ESC
                         . $mdl->getTableName()
                         . SQL_ESC . '.' . SQL_ESC
                         . 'id' . SQL_ESC)

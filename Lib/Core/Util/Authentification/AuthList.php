@@ -14,7 +14,7 @@
  */
 namespace Diana\Core\Util\Authentification
 {
-    use Diana\Core\Std\String;
+    use Diana\Core\Std\StringType;
 
     class AuthList
     {

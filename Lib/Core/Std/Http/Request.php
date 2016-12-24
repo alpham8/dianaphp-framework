@@ -1,7 +1,7 @@
 <?php
 namespace Diana\Core\Std\Http
 {
-    use Diana\Core\Std\String;
+    use Diana\Core\Std\StringType;
 
     class Request
     {
@@ -37,37 +37,37 @@ namespace Diana\Core\Std\Http
         public function __construct()
         {
             if (!empty($_SERVER['HTTP_ACCEPT_CHARSET'])) {
-                $s = new String($_SERVER['HTTP_ACCEPT_CHARSET']);
+                $s = new StringType($_SERVER['HTTP_ACCEPT_CHARSET']);
                 $this->arAcceptedChars = $s->splitBy(';');
             }
 
             if (!empty($_SERVER['DOCUMENT_ROOT'])) {
-                $this->sDocumentRoot = new String($_SERVER['DOCUMENT_ROOT']);
+                $this->sDocumentRoot = new StringType($_SERVER['DOCUMENT_ROOT']);
             }
 
             if (!empty($_SERVER['HTTP_REFERER'])) {
-                $this->sReferer = new String($_SERVER['HTTP_REFERER']);
+                $this->sReferer = new StringType($_SERVER['HTTP_REFERER']);
             }
 
             if (!empty($_SERVER['REMOTE_HOST'])) {
-                $this->sRemoteHost = new String($_SERVER['REMOTE_HOST']);
+                $this->sRemoteHost = new StringType($_SERVER['REMOTE_HOST']);
             }
 
             if (!empty($_SERVER['REMOTE_ADDR'])) {
-                $this->sRemoteAddr = new String($_SERVER['REMOTE_ADDR']);
+                $this->sRemoteAddr = new StringType($_SERVER['REMOTE_ADDR']);
             }
 
             if (!empty($_SERVER['HTTP_CONNECTION'])) {
-                $this->sConnection = new String($_SERVER['HTTP_CONNECTION']);
+                $this->sConnection = new StringType($_SERVER['HTTP_CONNECTION']);
             }
 
 
             $this->bSecure = !empty($_SERVER['HTTPS']);
-            $this->sUserAgent = new String($_SERVER['HTTP_USER_AGENT']);
-            $this->sRequestUri = new String(isset($_SERVER['REQUEST_URI'])
+            $this->sUserAgent = new StringType($_SERVER['HTTP_USER_AGENT']);
+            $this->sRequestUri = new StringType(isset($_SERVER['REQUEST_URI'])
                                     ? $_SERVER['REQUEST_URI']
                                     : $_SERVER['HTTP_REQUEST_URI']);
-            $this->sRequestUri = new String('http://' . $_SERVER['HTTP_HOST']
+            $this->sRequestUri = new StringType('http://' . $_SERVER['HTTP_HOST']
                                     . $this->sRequestUri->__toString());
 
             $this->parseRawCookies();
@@ -75,7 +75,7 @@ namespace Diana\Core\Std\Http
             $this->sRequestMethod = $_SERVER['REQUEST_METHOD'];
             $this->parseHeaders();
 
-            $sAppRoot = new String(APP_ROOT);
+            $sAppRoot = new StringType(APP_ROOT);
             $this->sBaseUri = $this->sRequestUri->substring(
                                 0,
                                 $this->sRequestUri->indexOf($sAppRoot) + $sAppRoot->length
@@ -117,13 +117,13 @@ namespace Diana\Core\Std\Http
                 $iHighestQualifier = 0.0;
                 foreach ($this->arLanguages as $sLang => $iQaulifier) {
                     if ($iHighestQualifier === 1.0) {
-                        $this->sPreferedLanguage = new String($sLang);
+                        $this->sPreferedLanguage = new StringType($sLang);
                         break;
                     }
 
                     if ($iHighestQualifier < $iQaulifier) {
                         $iHighestQualifier = $iQaulifier;
-                        $this->sPreferedLanguage = new String($sLang);
+                        $this->sPreferedLanguage = new StringType($sLang);
                     }
                 }
             }
@@ -132,9 +132,9 @@ namespace Diana\Core\Std\Http
         protected function parseRawCookies()
         {
             if (isset($_SERVER['HTTP_COOKIE'])) {
-                $s = new String($_SERVER['HTTP_COOKIE']);
+                $s = new StringType($_SERVER['HTTP_COOKIE']);
                 foreach ($s->splitBy(';') as $rawcookie) {
-                    $ss = new String($rawcookie);
+                    $ss = new StringType($rawcookie);
                     list($k, $v) = $ss->splitBy('=', 2);
                     $this->arRawCookies[$k] = $v;
                 }
@@ -146,7 +146,7 @@ namespace Diana\Core\Std\Http
             $arHeaders = headers_list();
             $arSingleH = array();
             foreach ($arHeaders as $sHeader) {
-                $sHeader = new String($sHeader);
+                $sHeader = new StringType($sHeader);
                 $arSingleH = $sHeader->splitToStringsBy(':');
 
                 if (count($arSingleH) === 2) {
@@ -207,13 +207,13 @@ namespace Diana\Core\Std\Http
             return $this->sRequestMethod === self::METHOD_PUT;
         }
 
-        public function getParam(String $sKey)
+        public function getParam(StringType $sKey)
         {
             $sVal = $this->getRawParam($sKey);
 
             if (
                 $sVal === null
-                && $sVal instanceof String === false
+                && $sVal instanceof StringType === false
             ) {
                 return null;
             }
@@ -223,39 +223,39 @@ namespace Diana\Core\Std\Http
             return $esc->getEscaped();
         }
 
-        public function getRawParam(String $sKey)
+        public function getRawParam(StringType $sKey)
         {
             $sRet = null;
             if ($this->isGet()) {
                 if (array_key_exists($sKey->__toString(), $_GET)) {
-                    return new String($_GET[$sKey->__toString()]);
+                    return new StringType($_GET[$sKey->__toString()]);
                 }
 
                 if (
                     $this->sRequestUri->contains('/' . $sKey . '=')
                     || $this->sRequestUri->contains('/' . $sKey . urlencode('='))
                 ) {
-                    $sKey = new String('/' . $sKey->__toString());
+                    $sKey = new StringType('/' . $sKey->__toString());
                     $sBegin = $this->sRequestUri->substring($this->sRequestUri->indexOf($sKey) + 1);
                     $iEnd = $sBegin->indexOf('/');
                     $iEquals = $sBegin->indexOf('=');
 
                     if (!$iEquals) {
-                        $sEquals = new String(urlencode('='));
+                        $sEquals = new StringType(urlencode('='));
                         $iEquals = $sBegin->indexOf($sEquals) ? $sBegin->indexOf($sEquals) + $sEquals->length - 1 : false;
                     }
 
                     if ($iEquals) {
                         if (!$iEnd) {
-                            $sRet = new String(urldecode($sBegin->substring($iEquals + 1)->__toString()));
+                            $sRet = new StringType(urldecode($sBegin->substring($iEquals + 1)->__toString()));
                         } else {
-                            $sRet = new String(urldecode($sBegin->substring($iEquals + 1, $iEnd)->__toString()));
+                            $sRet = new StringType(urldecode($sBegin->substring($iEquals + 1, $iEnd)->__toString()));
                         }
                     }
                 }
             } elseif ($this->isPost()) {
                 if (array_key_exists($sKey->__toString(), $_POST)) {
-                    $sRet = new String($_POST[$sKey->__toString()]);
+                    $sRet = new StringType($_POST[$sKey->__toString()]);
                 }
             }
 
@@ -271,7 +271,7 @@ namespace Diana\Core\Std\Http
                     && count($_GET) > 0
                 ) {
                     foreach ($_GET as $strKey => $strVal) {
-                        $arRet[$strKey] = new String($strVal);
+                        $arRet[$strKey] = new StringType($strVal);
                     }
 
                     return $arRet;
@@ -289,7 +289,7 @@ namespace Diana\Core\Std\Http
                 }
             } elseif ($this->isPost()) {
                 foreach ($_POST as $strKey => $strVal) {
-                    $arRet[$strKey] = new String($strVal);
+                    $arRet[$strKey] = new StringType($strVal);
                 }
             }
 
@@ -328,13 +328,13 @@ namespace Diana\Core\Std\Http
 
                 if (empty($arBulder[1][0])) {
                     // take the first element and give an quantity of 1.0
-                    $sVal = new String($arBuilder[0][0]);
+                    $sVal = new StringType($arBuilder[0][0]);
                     $this->arAcceptEncodings = array('1.0' => $sVal);
                 } else {
                     foreach ($arBuilder[1] as $index => $value) {
                         // remove semicolon at the beginng of the key.
                         // No need for looping twice over it
-                        $sVal = new String($arBuilder[0][$index]);
+                        $sVal = new StringType($arBuilder[0][$index]);
                         $this
                             ->arAcceptEncodings[substr($value, 3)] = $sVal
                                                                         ->substring(

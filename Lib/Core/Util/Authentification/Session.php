@@ -1,7 +1,7 @@
 <?php
 namespace Diana\Core\Util\Authentification
 {
-    use Diana\Core\Std\String;
+    use Diana\Core\Std\StringType;
 
     class Session
     {
@@ -17,12 +17,12 @@ namespace Diana\Core\Util\Authentification
             return session_start();
         }
 
-        public function set(String $sKey, String $sValue)
+        public function set(StringType $sKey, StringType $sValue)
         {
             $_SESSION[$sKey->__toString()] = $sValue;
         }
 
-        public function get(String $sKey)
+        public function get(StringType $sKey)
         {
             $sKeySimple = $sKey->__toString();
             if (isset($_SESSION[$sKeySimple])) {
@@ -31,7 +31,7 @@ namespace Diana\Core\Util\Authentification
             return false;
         }
 
-        public function remove(String $sKey)
+        public function remove(StringType $sKey)
         {
             $sKeySimple = $sKey->__toString();
             unset($_SESSION[$sKeySimple]);

@@ -24,7 +24,7 @@ function include_file($sFile)
 
 function checkstring($str)
 {
-    return $str !== null && $str instanceof Diana\Core\Std\String && !$str->isEmpty();
+    return $str !== null && $str instanceof Diana\Core\Std\StringType && !$str->isEmpty();
 }
 
 function array_filled(&$ar)
